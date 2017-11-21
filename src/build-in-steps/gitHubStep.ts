@@ -26,4 +26,11 @@ export class GitHubStep implements Step {
     public execute(stepOptionsMap: StepOptionMap): void | Promise<void> {
 
     }
+
+    /**
+     * Retuns the step default option map.
+     */
+    public getDefaultOptionMap(): StepOptionMap {
+        return {};
+    }
 }

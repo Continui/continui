@@ -24,4 +24,9 @@ export interface Step {
      * Execute the step base on the given options.
      */
     execute(stepOptionsMap: StepOptionMap): void | Promise<void>;
+
+    /**
+     * Retuns the step default option map.
+     */
+    getDefaultOptionMap(): StepOptionMap;
 }
