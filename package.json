@@ -1,0 +1,28 @@
+{
+  "name": "continui",
+  "version": "0.0.1",
+  "description": "An library to easily implement the continuous integration and delivery/deploy.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/franciscomerdot/continui.git"
+  },
+  "keywords": [
+    "continuous",
+    "integration",
+    "devlivery",
+    "deploy",
+    "git",
+    "github",
+    "npm"
+  ],
+  "author": "Francisco Mercedes <franciscomerdot@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/franciscomerdot/continui/issues"
+  },
+  "homepage": "https://github.com/franciscomerdot/continui#readme"
+}
