@@ -13,6 +13,7 @@ export class Continui {
             steps: [],
             buildInSteps: stepList
         })        
+        
     }
 
     public loadSteps(...steps: Step<any>[]): void {
