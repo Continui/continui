@@ -1,24 +1,24 @@
-import { Step } from "../step";
-import { StepOptionMap } from "../stepOptionMap";
+import { Step } from "../../step";
+import { StepOptionMap } from "../../stepOptionMap";
 
 /**
- * Represents a npm step that can manage the versioning and publishing of npm package.
+ * Represents a npm publish step to publish npm packages.
  */
-export class NpmStep implements Step {
+export class NpmPublishStep implements Step {
     /**
      * Represents the step identifier.
      */
-    public get identifier(): string { return 'npm' };
+    public get identifier(): string { return 'npm-publish' };
     
     /**
      * Represents the step name.
      */
-    public get name(): string { return 'NPM' };
+    public get name(): string { return ' Publish' };
 
     /**
      * Represents the step description.
      */
-    public get description(): string { return 'Represents a npm step that can manage the versioning and publishing of npm package.' };
+    public get description(): string { return 'Represents a npm publish step to publish npm packages.' };
 
     /**
      * Execute the step base on the given options.
