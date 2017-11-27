@@ -24,5 +24,11 @@
   "bugs": {
     "url": "https://github.com/franciscomerdot/continui/issues"
   },
-  "homepage": "https://github.com/franciscomerdot/continui#readme"
+  "homepage": "https://github.com/franciscomerdot/continui#readme",
+  "dependencies": {
+    "axios": "^0.17.1",
+    "co": "^4.6.0",
+    "form-data": "^2.3.1"
+  },
+  "devDependencies": { }
 }
