@@ -10,7 +10,7 @@ export class GitHubReleaseDefinition {
     public owner: string
 
     /**
-     * Get or set the repository that will be release.
+     * Get or set the repository that will be released.
      */
     public repository: string
 
@@ -35,7 +35,7 @@ export class GitHubReleaseDefinition {
     public description: string
 
     /**
-     * Get or set a boolean value specifying if the release is a Draft.
+     * Get or set a boolean value specifying if the release is a draft.
      */
     public isDraft: boolean
 

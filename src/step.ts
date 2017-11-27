@@ -1,4 +1,5 @@
-import { StepOptionMap } from "./stepOptionMap";
+import { StepOptionDefiner } from "./stepOptionDefiner";
+import { StepOptionKeyValueMap } from "./stepOptionKeyValueMap";
 
 /**
  * Represents an step that can be performed in pipeline.
@@ -6,17 +7,17 @@ import { StepOptionMap } from "./stepOptionMap";
 export interface Step<Context> {
 
     /**
-     * Represents the step denifier.
+     * Get the step denifier.
      */
     identifier: string;
 
     /**
-     * Represents the step name.
+     * Get the step name.
      */
     name: string;
 
     /**
-     * Represents the step description.
+     * Get the step description.
      */
     description: string;
 
@@ -57,15 +58,15 @@ export interface Step<Context> {
     restoreAsync(context: Context): Promise<void>;
 
     /**
-     * Retuns the step default option map.
-     * @returns The default step option map.
+     * Defines the step options with the provided definer.
+     * @param stepOptionDefiner Represents a step option definer to define the step options.
      */
-    getDefaultOptionMap(): StepOptionMap;
+    defineOptions(stepOptionDefiner: StepOptionDefiner): void;
 
     /**
      * Creates and return an new context bases on the provided options.
-     * @param stepOptionsMap Represents the options provided to run the step.
+     * @param stepOptionKeyValueMap Represents the options map provided to run the step.
      * @returns A new execution context bases on the provided options.
      */
-    createsNewContextFromOptionsMap(stepOptionsMap: StepOptionMap): Context 
+    createsNewContextFromOptionsMap(stepOptionKeyValueMap: StepOptionKeyValueMap): Context 
 }

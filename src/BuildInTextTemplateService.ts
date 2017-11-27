@@ -1,4 +1,4 @@
-import { TextTemplateService } from "./TextTemplateService";
+import { TextTemplateService } from "./textTemplateService";
 
 /**
  * Represents a template service for text that can tranform text using placeholders.

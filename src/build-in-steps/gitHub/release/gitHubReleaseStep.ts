@@ -1,19 +1,20 @@
 
 import { Step } from "../../../step"
-import { StepOptionMap } from "../../../stepOptionMap"
-import { GitHubReleaseContext } from "./gitHubReleaseContext"
+import { StepOption } from "../../../stepOption";
+import { StepOptionDefiner } from "../../../stepOptionDefiner";
+import { StepOptionKeyValueMap } from "../../../stepOptionKeyValueMap"
 import { TextTemplateService } from "../../../TextTemplateService";
+import { GitHubReleaseContext } from "./gitHubReleaseContext"
+import { GitHubReleaseDefinition } from "./gitHubReleaseDefinition";
+import { GitHubReleaseInformation } from "./gitHubReleaseInformation";
+
+import * as fs from 'fs'
+import * as path from 'path'
+import * as FormData from 'form-data'
 
 import axios from 'axios'
 import co from 'co'
-import fs from 'fs'
-import path from 'path'
-
-import FormData from 'form-data'
-import { strictEqual } from "assert";
-import { contentType } from "mime-types";
-import { GitHubReleaseDefinition } from "./gitHubReleaseDefinition";
-import { GitHubReleaseInformation } from "./gitHubReleaseInformation";
+import { fail } from "assert";
 
 let privateScope = new WeakMap<GitHubReleaseStep, {
     textTemplateService: TextTemplateService
@@ -33,7 +34,7 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
     /**
      * Get the step identifier.
      */
-    public get identifier(): string { return 'git-hub-release' }
+    public get identifier(): string { return 'ghr' }
     
     /**
      * Get the step name.
@@ -145,20 +146,83 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
         })
     }
 
-    /** 
-     * Retuns the step default option map.
-     * @returns The default step option map.
+    /**
+     * Defines the step options with the provided definer.
+     * @param stepOptionDefiner Represents a step option definer to define the step options.
      */
-    public getDefaultOptionMap(): StepOptionMap {
-        return {}
+    public defineOptions(stepOptionDefiner: StepOptionDefiner): void {
+
+        stepOptionDefiner.define({
+            longKey: 'token',
+            description: 'Represents the git hub token to comunicate with the API',
+            defaultValue: null,
+            isRequired: true,
+            isTemplated: false
+        }).define({
+            longKey: 'owner',
+            description: 'Represents the owner name of the repository.',
+            defaultValue: null,
+            isRequired: true,
+            isTemplated: false
+        }).define({
+            longKey: 'repository',
+            description: 'Represents the repository that will be released.',
+            defaultValue: null,
+            isRequired: true,
+            isTemplated: false
+        }).define({
+            longKey: 'tag',
+            description: 'Represents the tag where the release will be based on.',
+            defaultValue: null,
+            isRequired: false,
+            isTemplated: true
+        }).define({
+            longKey: 'target',
+            description: 'Represents the target were the tag will be based on, if the tag already exist must not be provided.',
+            defaultValue: null,
+            isRequired: false,
+            isTemplated: true
+        }).define({
+            longKey: 'name',
+            description: 'Represents the release name.',
+            defaultValue: null,
+            isRequired: true,
+            isTemplated: true
+        }).define({
+            longKey: 'description',
+            description: 'Represents the release description.',
+            defaultValue: null,
+            isRequired: false,
+            isTemplated: true
+        }).define({
+            longKey: 'draft',
+            description: 'Represents a boolean value specifying if the release is a draft.',
+            defaultValue: 'false',
+            isRequired: false,
+            isTemplated: false
+        }).define({
+            longKey: 'pre',
+            description: 'Represents a boolean value specifying if the release is a pre-release',
+            defaultValue: 'false',
+            isRequired: false,
+            isTemplated: false
+        }).define({
+            longKey: 'pre',
+            description: 'Represents a boolean value specifying if the release is a pre-release',
+            defaultValue: 'false',
+            isRequired: false,
+            isTemplated: false
+        })
+        
     }
+    
 
     /**
      * Creates and return an new context bases on the provided options.
      * @param stepOptionsMap Represents the options provided to run the step.
      * @returns A new execution context bases on the provided options.
      */
-    public createsNewContextFromOptionsMap(stepOptionsMap: StepOptionMap): GitHubReleaseContext {
+    public createsNewContextFromOptionsMap(stepOptionsMap: StepOptionKeyValueMap): GitHubReleaseContext {
         
         let context:GitHubReleaseContext = new GitHubReleaseContext();
         context.releaseDefinition = new GitHubReleaseDefinition();
