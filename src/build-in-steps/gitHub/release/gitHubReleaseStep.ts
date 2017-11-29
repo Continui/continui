@@ -7,6 +7,7 @@ import { TextTemplateService } from "../../../TextTemplateService";
 import { GitHubReleaseContext } from "./gitHubReleaseContext"
 import { GitHubReleaseDefinition } from "./gitHubReleaseDefinition";
 import { GitHubReleaseInformation } from "./gitHubReleaseInformation";
+import * as stepOptionType from "../../../stepOptionType"
 
 import * as fs from 'fs'
 import * as path from 'path'
@@ -157,61 +158,72 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
             description: 'Represents the git hub token to comunicate with the API',
             defaultValue: null,
             isRequired: true,
-            isTemplated: false
+            isTemplated: false,
+            primaryType: stepOptionType.text
         }).define({
             longKey: 'owner',
             description: 'Represents the owner name of the repository.',
             defaultValue: null,
             isRequired: true,
-            isTemplated: false
+            isTemplated: false,
+            primaryType: stepOptionType.text
         }).define({
             longKey: 'repository',
             description: 'Represents the repository that will be released.',
             defaultValue: null,
             isRequired: true,
-            isTemplated: false
+            isTemplated: false,
+            primaryType: stepOptionType.text
         }).define({
             longKey: 'tag',
             description: 'Represents the tag where the release will be based on.',
             defaultValue: null,
             isRequired: false,
-            isTemplated: true
+            isTemplated: true,
+            primaryType: stepOptionType.text
         }).define({
             longKey: 'target',
             description: 'Represents the target were the tag will be based on, if the tag already exist must not be provided.',
             defaultValue: null,
             isRequired: false,
-            isTemplated: true
+            isTemplated: true,
+            primaryType: stepOptionType.text
         }).define({
             longKey: 'name',
             description: 'Represents the release name.',
             defaultValue: null,
             isRequired: true,
-            isTemplated: true
+            isTemplated: true,
+            primaryType: stepOptionType.text
         }).define({
             longKey: 'description',
             description: 'Represents the release description.',
             defaultValue: null,
             isRequired: false,
-            isTemplated: true
+            isTemplated: true,
+            primaryType: stepOptionType.text
         }).define({
             longKey: 'draft',
             description: 'Represents a boolean value specifying if the release is a draft.',
             defaultValue: 'false',
             isRequired: false,
-            isTemplated: false
+            isTemplated: false,
+            primaryType: stepOptionType.boolean
         }).define({
             longKey: 'pre',
             description: 'Represents a boolean value specifying if the release is a pre-release',
             defaultValue: 'false',
             isRequired: false,
-            isTemplated: false
+            isTemplated: false,
+            primaryType: stepOptionType.boolean
         }).define({
-            longKey: 'pre',
-            description: 'Represents a boolean value specifying if the release is a pre-release',
+            longKey: 'paths',
+            description: 'Represents a list of paths that represents the assets that will be uploaded.',
             defaultValue: 'false',
             isRequired: false,
-            isTemplated: false
+            isTemplated: false,
+            primaryType: stepOptionType.list,
+            secondaryType: stepOptionType.text
         })
         
     }
@@ -224,6 +236,8 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
      */
     public createsNewContextFromOptionsMap(stepOptionsMap: StepOptionKeyValueMap): GitHubReleaseContext {
         
+        console.log(stepOptionsMap);
+
         let context:GitHubReleaseContext = new GitHubReleaseContext();
         context.releaseDefinition = new GitHubReleaseDefinition();
         context.releaseInformation = new GitHubReleaseInformation();
@@ -239,6 +253,8 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
         let unexistingAssets: string[] = [];
 
         assets.forEach(asset => {
+            asset = path.resolve(asset)
+
             if (!fs.existsSync(asset)) {
                 unexistingAssets.push(asset)
             } 

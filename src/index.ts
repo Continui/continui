@@ -1,21 +1,18 @@
-#!/usr/bin/env node
-
-import * as cli from 'commander'
-
-const pkg = require('../package.json')
-
-cli
- .version(pkg.version) 
- .option('-h', 'Qloq')
- .option('-ghr-required', 'Qloq con Qloq')
- .parse(process.argv);
+import { Continui } from './continui';
+import { Activator } from './activator';
+import { BuildInActivator } from './buildInActivator';
+import { GitHubReleaseStep } from './build-in-steps/gitHub/release/gitHubReleaseStep';
 
 
-console.log(cli);
+let activator: Activator = new BuildInActivator()
+activator.register('step', GitHubReleaseStep)
 
+/**
+ * Returns a new continui application ready to be executed.
+ * @returns A new continui application.
+ */
+export function createContinuiApplication(): Continui {
+    return <Continui>activator.resolve(Continui);
+}
 
-console.log('you ordered a pizza with:');
-if (cli.peppers) console.log('  - peppers');
-if (cli.pineapple) console.log('  - pineapple');
-if (cli.bbqSauce) console.log('  - bbq');
-console.log('  - %s cheese', cli.cheese);
+export { activator as activator }
