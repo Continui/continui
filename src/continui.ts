@@ -1,28 +1,39 @@
 import { Step } from "./step";
-import { StepOptionMap } from "./stepOptionMap";
+import { StepOptionKeyValueMap } from "./stepOptionKeyValueMap";
+
+import * as fs from 'fs'
+import * as path from 'path'
+import { StepOptionDefinerFactory } from "./stepOptionDefinerFactory";
 
 let privateScope = new WeakMap<Continui, {
     steps:Step<any>[]
+    stepOptionDefinerFactory: StepOptionDefinerFactory
 }>();
 
 export class Continui {
 
-    constructor(stepList: Step<any>[]) {
+    constructor(stepList: Step<any>[], stepOptionDefinerFactory: StepOptionDefinerFactory) {
         privateScope.set(this, {
-            steps: stepList
-        })        
-        
-        this.loadSteps(...stepList);
+            steps: stepList,
+            stepOptionDefinerFactory: stepOptionDefinerFactory
+        })
     }
 
     public loadSteps(...steps: Step<any>[]): void {
-        steps.forEach(step => privateScope.get(this).steps.push(step))
+
+        let scope = privateScope.get(this);
+
+        steps.forEach(step => {            
+            step.defineOptions(scope.stepOptionDefinerFactory.getOptionDefinerForStep(step))
+            scope.steps.push(step)
+        })
     }
 
-    public execute(identifiedStepOptionMap:{[stepIdentifier:string]:StepOptionMap}): void {
+    public execute(identifiedStepOptionKeyValueMap:{[stepIdentifier:string]:StepOptionKeyValueMap}): void {
         privateScope.get(this).steps.forEach(step => {
-            let stepOpionsMap: StepOptionMap = Object.assign({},                                                             
-                                                             identifiedStepOptionMap[step.identifier])
+            let stepOpionsMap: StepOptionKeyValueMap = Object.assign({},
+                                                                                                                         
+                                                             identifiedStepOptionKeyValueMap[step.identifier])
 
             let context: any = step.createsNewContextFromOptionsMap(stepOpionsMap)
 
@@ -35,5 +46,10 @@ export class Continui {
                 step.restore(context)
             }
         });
+    }
+
+    private getidentifiedStepOptionKeyValueMapFromRoot(): {[stepIdentifier:string]:StepOptionKeyValueMap} {
+        let filePath: string = path.resolve(__dirname, 'continui.json')
+        return fs.existsSync(filePath) ? require(filePath) : {};
     }
 }
