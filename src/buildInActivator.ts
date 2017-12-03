@@ -3,7 +3,7 @@ import { createKernel, Kernel } from '@jems/di'
 
 let privateScope:WeakMap<BuildInActivator, {
     kernel: Kernel
-}>
+}> = new WeakMap();
 
 /**
  * Represenst an activator that can register and solve depencencies.

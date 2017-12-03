@@ -1,5 +1,5 @@
 import { StepOptionDefiner } from "./stepOptionDefiner";
-import { StepOptionKeyValueMap } from "./stepOptionKeyValueMap";
+import { KeyValueMap } from "./keyValueMap";
 
 /**
  * Represents an step that can be performed in pipeline.
@@ -68,5 +68,5 @@ export interface Step<Context> {
      * @param stepOptionKeyValueMap Represents the options map provided to run the step.
      * @returns A new execution context bases on the provided options.
      */
-    createsNewContextFromOptionsMap(stepOptionKeyValueMap: StepOptionKeyValueMap): Context 
+    createsNewContextFromOptionsMap(stepOptionKeyValueMap: KeyValueMap<any>): Context 
 }

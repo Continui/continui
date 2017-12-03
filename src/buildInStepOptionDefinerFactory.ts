@@ -12,6 +12,6 @@ export class BuildInStepOptionDefinerFactory implements StepOptionDefinerFactory
      * @returns An step option definer.
      */
     public getOptionDefinerForStep(step: Step<any>): StepOptionDefiner {
-        
+        return null;
     }
 }

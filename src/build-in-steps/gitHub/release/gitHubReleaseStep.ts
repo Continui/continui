@@ -3,7 +3,7 @@ import { Step } from "../../../step"
 import { StepOption } from "../../../stepOption";
 import { StepOptionDefiner } from "../../../stepOptionDefiner";
 import { StepOptionKeyValueMap } from "../../../stepOptionKeyValueMap"
-import { TextTemplateService } from "../../../TextTemplateService";
+import { TextTemplateService } from "../../../textTemplateService";
 import { GitHubReleaseContext } from "./gitHubReleaseContext"
 import { GitHubReleaseDefinition } from "./gitHubReleaseDefinition";
 import { GitHubReleaseInformation } from "./gitHubReleaseInformation";
@@ -15,7 +15,6 @@ import * as FormData from 'form-data'
 
 import axios from 'axios'
 import co from 'co'
-import { fail } from "assert";
 
 let privateScope = new WeakMap<GitHubReleaseStep, {
     textTemplateService: TextTemplateService
