@@ -2,4 +2,4 @@
 
 import { createContinuiApplication } from './index'
 
-createContinuiApplication().executeFromCli(process.argv.slice(2));
+createContinuiApplication().executeFromCli(process.argv);
