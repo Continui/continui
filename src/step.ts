@@ -64,12 +64,6 @@ export interface Step<Context> {
     restoreAsync(context: Context): Promise<void>;
 
     /**
-     * Defines the step options with the provided definer.
-     * @param stepOptionDefiner Represents a step option definer to define the step options.
-     */
-    defineOptions(stepOptionDefiner: StepOptionDefiner): void;
-
-    /**
      * Creates and return an new context bases on the provided options.
      * @param stepOptionKeyValueMap Represents the options map provided to run the step.
      * @returns A new execution context bases on the provided options.
