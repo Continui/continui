@@ -1,5 +1,6 @@
 import { StepOptionDefiner } from "./stepOptionDefiner";
 import { KeyValueMap } from "./keyValueMap";
+import { StepOption } from "./stepOption";
 
 /**
  * Represents an step that can be performed in pipeline.
@@ -20,6 +21,11 @@ export interface Step<Context> {
      * Get the step description.
      */
     description: string;
+
+    /**
+     * Represents the step otions used to execute the step.
+     */
+    options: StepOption[];
 
     /**
      * Creates a restoration point based on the step to rollback the changes in case that the pipe flow breaks.
