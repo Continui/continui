@@ -202,7 +202,7 @@ export class Continui {
 
         if (stepErrorsMaps.length) {
             stepErrorsMaps.forEach(stepErrorMap => {
-                errorMessage += `\nStep ${stepErrorMap.step.name}[${stepErrorMap.step.identifier}] can not be executed due:\n\n`;
+                errorMessage += `\nStep [${stepErrorMap.step.identifier}](${stepErrorMap.step.name}) can not be executed due:\n\n`;
 
                 stepErrorMap.errors.forEach(error => errorMessage += error + '\n')
             })
