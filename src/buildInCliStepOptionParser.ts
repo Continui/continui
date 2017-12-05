@@ -1,7 +1,7 @@
-import { KeyValueMap } from "./keyValueMap";
 import { CliStepOptionParser } from "./cliStepOptionParser";
+import { IdentifiedStepOptionMaps } from "./types";
 
-import minimist from 'minimist'
+import * as minimist from 'minimist'
 
 /**
  * Represens a parser that parse from cli arguments to identified step options map. 
@@ -12,9 +12,13 @@ export class BuildInCliStepOptionParser implements CliStepOptionParser {
      * @param cliArguments Represents the cli arguments.
      * @returns An identified step option map.
      */
-    public parse(cliArguments: any[]) : KeyValueMap<KeyValueMap<any>> {
+    public parse(cliArguments: any[]) : IdentifiedStepOptionMaps {
         let minimistParsedArguments = minimist(cliArguments.slice(2))
-        let identifiedStepOptionMap: KeyValueMap<KeyValueMap<any>> = {};
+        let identifiedStepOptionMap: IdentifiedStepOptionMaps = {};
+
+        identifiedStepOptionMap['main'] = {
+            steps: minimistParsedArguments._
+        }
 
         // TODO: parce arguments to options.
 

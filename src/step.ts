@@ -1,6 +1,5 @@
-import { StepOptionDefiner } from "./stepOptionDefiner";
-import { KeyValueMap } from "./keyValueMap";
 import { StepOption } from "./stepOption";
+import { StepOptionValueMap } from "./types";
 
 /**
  * Represents an step that can be performed in pipeline.
@@ -31,42 +30,42 @@ export interface Step<Context> {
      * Creates a restoration point based on the step to rollback the changes in case that the pipe flow breaks.
      * @param context Represents the step execution context.
      */
-    createsRestaurationPoint(context: Context): void
+    createsRestaurationPoint(stepOptionValueMap: StepOptionValueMap, context: Context): void
 
     /**
      * Asynchronously creates a restoration point based on the step to rollback the changes in case that the pipe flow breaks.
      * @param context Represents the step execution context.
      */
-    createsRestaurationPointAsync(context: Context): Promise<void>
+    createsRestaurationPointAsync(stepOptionValueMap: StepOptionValueMap, context: Context): Promise<void>
 
     /**
      * Execute the step base on the given options and context.
      * @param context Represents the step execution context.
      */
-    execute(context: Context): void;
+    execute(stepOptionValueMap: StepOptionValueMap, context: Context): void;
 
     /**
      * Asynchronously execute the step base on the given options and context.     
      * @param context Represents the step execution context.
      */
-    executeAsync(context: Context): Promise<void>;
+    executeAsync(stepOptionValueMap: StepOptionValueMap, context: Context): Promise<void>;
     
     /**
      * Restore the step base on the given options and context.
      * @param context Represents the step execution context.
      */
-    restore(context: Context): void;
+    restore(stepOptionValueMap: StepOptionValueMap, context: Context): void;
     
     /**
      * Asynchronously restore the step base on the given options and context.     
      * @param context Represents the step execution context.
      */
-    restoreAsync(context: Context): Promise<void>;
+    restoreAsync(stepOptionValueMap: StepOptionValueMap, context: Context): Promise<void>;
 
     /**
      * Creates and return an new context bases on the provided options.
      * @param stepOptionKeyValueMap Represents the options map provided to run the step.
      * @returns A new execution context bases on the provided options.
      */
-    createsNewContextFromOptionsMap(stepOptionKeyValueMap: KeyValueMap<any>): Context 
+    createsNewContextFromOptionsMap(stepOptionKeyValueMap: StepOptionValueMap): Context 
 }

@@ -5,14 +5,9 @@ import { fail } from "assert";
  */
 export interface StepOption {
     /**
-     * Represents a short key for the option.
+     * Represents a key for the option.
      */
-    shortKey?:string
-
-    /**
-     * Represents a long key for the option.
-     */
-    longKey:string
+    key?:string
 
     /**
      * Represents a description for the option.

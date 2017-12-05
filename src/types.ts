@@ -1,5 +1,5 @@
-type StepOptionMap = {[Key:string]:any};
-type IdentifiedStepOptionMaps = {[Key:string]:StepOptionMap};
+type StepOptionValueMap = {[Key:string]:any};
+type IdentifiedStepOptionMaps = {[Key:string]:StepOptionValueMap};
 
-export { StepOptionMap as StepOptionMap }
+export { StepOptionValueMap as StepOptionValueMap }
 export { IdentifiedStepOptionMaps as IdentifiedStepOptionMaps }

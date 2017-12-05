@@ -1,4 +1,5 @@
-import { KeyValueMap } from "./keyValueMap";
+import { IdentifiedStepOptionMaps } from "./types";
+
 
 /**
  * Represens a parser that parse from cli arguments to identified step options map. 
@@ -9,5 +10,5 @@ export interface CliStepOptionParser {
      * @param cliArguments Represents the cli arguments.
      * @returns An identified step option map.
      */
-    parse(cliArguments: any[]) : KeyValueMap<KeyValueMap<any>>;
+    parse(cliArguments: any[]) : IdentifiedStepOptionMaps;
 }

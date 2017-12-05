@@ -1,12 +1,9 @@
 
 import { Step } from "../../../step"
 import { StepOption } from "../../../stepOption";
-import { StepOptionDefiner } from "../../../stepOptionDefiner";
-import { StepOptionKeyValueMap } from "../../../stepOptionKeyValueMap"
+import { StepOptionValueMap } from "../../../types";
 import { TextTemplateService } from "../../../textTemplateService";
 import { GitHubReleaseContext } from "./gitHubReleaseContext"
-import { GitHubReleaseDefinition } from "./gitHubReleaseDefinition";
-import { GitHubReleaseInformation } from "./gitHubReleaseInformation";
 import * as stepOptionType from "../../../stepOptionType"
 
 import * as fs from 'fs'
@@ -15,6 +12,7 @@ import * as FormData from 'form-data'
 
 import axios from 'axios'
 import co from 'co'
+
 
 let privateScope = new WeakMap<GitHubReleaseStep, {
     textTemplateService: TextTemplateService
@@ -47,10 +45,15 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
     public get description(): string { return 'Represents a git hub release step that can create well defined releases on Git Hub.' }
 
     /**
+     * Represents the step otions used to execute the step.
+     */
+    public get options(): StepOption[] { return this.getOptions() }
+
+    /**
      * Creates a restoration point based on the step to rollback the changes in case that the pipe flow breaks.
      * @param context Represents the step execution context.
      */
-    public createsRestaurationPoint(context: GitHubReleaseContext): void {
+    public createsRestaurationPoint(stepOptionValueMap: StepOptionValueMap, context: GitHubReleaseContext): void {
        // NOTHING to do here.
     }
     
@@ -58,10 +61,10 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
      * Asynchronously creates a restoration point based on the step to rollback the changes in case that the pipe flow breaks.
      * @param context Represents the step execution context.
      */
-    public createsRestaurationPointAsync(context: GitHubReleaseContext): Promise<void> {
+    public createsRestaurationPointAsync(stepOptionValueMap: StepOptionValueMap, context: GitHubReleaseContext): Promise<void> {
         return new Promise((resolve, reject) => {
             try {
-                this.createsRestaurationPoint(context)
+                this.createsRestaurationPoint(stepOptionValueMap, context)
                 resolve()
             } catch(error) {
                 reject(error)
@@ -73,31 +76,31 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
      * Execute the step base on the given options and context.
      * @param context Represents the step execution context.
      */
-    public execute(context: GitHubReleaseContext): void {
+    public execute(stepOptionValueMap: StepOptionValueMap, context: GitHubReleaseContext): void {
 
         let textTemplateService: TextTemplateService = privateScope.get(this).textTemplateService;
 
         co(function* () {
 
-            let assets:string[] = this.getNormalizedAssetsPaths(context.releaseDefinition.assetsPath)
+            let assets:string[] = this.getNormalizedAssetsPaths(stepOptionValueMap.paths)
 
-            yield axios.post(`https://api.github.com/repos/${context.releaseDefinition.owner}/${context.releaseDefinition.repository}/releases?access_token=${context.releaseDefinition.gitHubToken}`, {
-                tag_name:  textTemplateService.tranform(context.releaseDefinition.tagName),
-                target_commitish: textTemplateService.tranform(context.releaseDefinition.target),
-                name: textTemplateService.tranform(context.releaseDefinition.name),
-                body: textTemplateService.tranform(context.releaseDefinition.description),
-                draft: context.releaseDefinition.isDraft,
-                prerelease: context.releaseDefinition.isPreRelease
+            yield axios.post(`https://api.github.com/repos/${stepOptionValueMap.owner}/${stepOptionValueMap.repository}/releases?access_token=${stepOptionValueMap.token}`, {
+                tag_name:  textTemplateService.tranform(stepOptionValueMap.tag),
+                target_commitish: textTemplateService.tranform(stepOptionValueMap.target),
+                name: textTemplateService.tranform(stepOptionValueMap.name),
+                body: textTemplateService.tranform(stepOptionValueMap.description),
+                draft: stepOptionValueMap.draft,
+                prerelease: stepOptionValueMap.pre
             }).then(response => {
-                context.releaseInformation.id = response.data.id
-                context.releaseInformation.uploadURL = response.data.upload_url
+                context.id = response.data.id
+                context.uploadURL = response.data.upload_url
             })
 
             yield assets.map(asset => {
                 let formData:FormData = new FormData(undefined)
                 formData.append('data-binary', fs.createReadStream(asset))
 
-                return axios.post(context.releaseInformation.uploadURL.replace('{?name,label}', '?name=' + path.basename(asset)), formData, {
+                return axios.post(context.uploadURL.replace('{?name,label}', '?name=' + path.basename(asset)), formData, {
                     headers: formData.getHeaders()
                 })
             })
@@ -108,10 +111,10 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
      * Asynchronously execute the step base on the given options and context.     
      * @param context Represents the step execution context.
      */
-    public executeAsync(context: GitHubReleaseContext): Promise<void> {
+    public executeAsync(stepOptionValueMap: StepOptionValueMap, context: GitHubReleaseContext): Promise<void> {
         return new Promise((resolve, reject) => {
             try {
-                this.execute(context)
+                this.execute(stepOptionValueMap, context)
                 resolve()
             } catch(error) {
                 reject(error)
@@ -123,10 +126,10 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
      * Restore the step base on the given options and context.
      * @param context Represents the step execution context.
      */
-    public restore(context: GitHubReleaseContext): void {
-        if (context.releaseInformation.id) {
+    public restore(stepOptionValueMap: StepOptionValueMap, context: GitHubReleaseContext): void {
+        if (context.id) {
             co(function*() {
-                yield axios.delete(`https://api.github.com/repos/${context.releaseDefinition.owner}/${context.releaseDefinition.repository}/` + context.releaseInformation.id)
+                yield axios.delete(`https://api.github.com/repos/${stepOptionValueMap.owner}/${stepOptionValueMap.repository}/` + context.id)
             })          
         }
     }
@@ -135,10 +138,10 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
      * Asynchronously restore the step base on the given options and context.     
      * @param context Represents the step execution context.
      */
-    public restoreAsync(context: GitHubReleaseContext): Promise<void> {
+    public restoreAsync(stepOptionValueMap: StepOptionValueMap, context: GitHubReleaseContext): Promise<void> {
         return new Promise((resolve, reject) => {
             try {
-                this.restore(context)
+                this.restore(stepOptionValueMap, context)
                 resolve()
             } catch(error) {
                 reject(error)
@@ -150,81 +153,89 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
      * Defines the step options with the provided definer.
      * @param stepOptionDefiner Represents a step option definer to define the step options.
      */
-    public defineOptions(stepOptionDefiner: StepOptionDefiner): void {
+    private getOptions(): StepOption[] {
 
-        stepOptionDefiner.define({
-            longKey: 'token',
+        return[{
+            key: 'token',
             description: 'Represents the git hub token to comunicate with the API',
             defaultValue: null,
             isRequired: true,
             isTemplated: false,
             primaryType: stepOptionType.text
-        }).define({
-            longKey: 'owner',
+        },
+        {
+            key: 'owner',
             description: 'Represents the owner name of the repository.',
             defaultValue: null,
             isRequired: true,
             isTemplated: false,
             primaryType: stepOptionType.text
-        }).define({
-            longKey: 'repository',
+        },
+        {
+            key: 'repository',
             description: 'Represents the repository that will be released.',
             defaultValue: null,
             isRequired: true,
             isTemplated: false,
             primaryType: stepOptionType.text
-        }).define({
-            longKey: 'tag',
+        },
+        {
+            key: 'tag',
             description: 'Represents the tag where the release will be based on.',
             defaultValue: null,
             isRequired: false,
             isTemplated: true,
             primaryType: stepOptionType.text
-        }).define({
-            longKey: 'target',
+        },
+        {
+            key: 'target',
             description: 'Represents the target were the tag will be based on, if the tag already exist must not be provided.',
             defaultValue: null,
             isRequired: false,
             isTemplated: true,
             primaryType: stepOptionType.text
-        }).define({
-            longKey: 'name',
+        },
+        {
+            key: 'name',
             description: 'Represents the release name.',
             defaultValue: null,
             isRequired: true,
             isTemplated: true,
             primaryType: stepOptionType.text
-        }).define({
-            longKey: 'description',
+        },
+        {
+            key: 'description',
             description: 'Represents the release description.',
             defaultValue: null,
             isRequired: false,
             isTemplated: true,
             primaryType: stepOptionType.text
-        }).define({
-            longKey: 'draft',
+        },
+        {
+            key: 'draft',
             description: 'Represents a boolean value specifying if the release is a draft.',
             defaultValue: 'false',
             isRequired: false,
             isTemplated: false,
             primaryType: stepOptionType.boolean
-        }).define({
-            longKey: 'pre',
+        },
+        {
+            key: 'pre',
             description: 'Represents a boolean value specifying if the release is a pre-release',
             defaultValue: 'false',
             isRequired: false,
             isTemplated: false,
             primaryType: stepOptionType.boolean
-        }).define({
-            longKey: 'paths',
+        },
+        {
+            key: 'paths',
             description: 'Represents a list of paths that represents the assets that will be uploaded.',
             defaultValue: 'false',
             isRequired: false,
             isTemplated: false,
             primaryType: stepOptionType.list,
             secondaryType: stepOptionType.text
-        })
-        
+        }];        
     }
     
 
@@ -233,15 +244,13 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
      * @param stepOptionsMap Represents the options provided to run the step.
      * @returns A new execution context bases on the provided options.
      */
-    public createsNewContextFromOptionsMap(stepOptionsMap: StepOptionKeyValueMap): GitHubReleaseContext {
+    public createsNewContextFromOptionsMap(stepOptionsMap: StepOptionValueMap): GitHubReleaseContext {
         
         console.log(stepOptionsMap);
 
         let context:GitHubReleaseContext = new GitHubReleaseContext();
-        context.releaseDefinition = new GitHubReleaseDefinition();
-        context.releaseInformation = new GitHubReleaseInformation();
 
-        return context;
+        return  new GitHubReleaseContext();
     }
 
     private getNormalizedAssetsPaths(assets: string | string[]): string[] {
