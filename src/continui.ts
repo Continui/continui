@@ -3,9 +3,10 @@ import { Step } from "./step";
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { CliStepOptionParser } from "./cliStepOptionParser"
 import { StepOption } from "./stepOption"
 import { StepOptionValueMap, IdentifiedStepOptionMaps } from "./types"
+import { CliStepOptionParsingService } from "./services/cliStepOptionParsingService";
+import { LoggingService } from "./services/loggingService";
 
 //let pkg = require('../package.json')
 
@@ -13,19 +14,22 @@ let privateScope: WeakMap<Continui, {
     steps: Step<any>[]
     defaultIdentifiedStepOptionMaps: IdentifiedStepOptionMaps
     combinedIdentifiedStepOptionMaps: IdentifiedStepOptionMaps
-    cliStepOptionParser: CliStepOptionParser
+    cliStepOptionParsingService: CliStepOptionParsingService
+    loggingService: LoggingService
 }> = new WeakMap();
 
 export class Continui {
 
     constructor(stepList: Step<any>[],
-        cliStepOptionParser: CliStepOptionParser) {
+        cliStepOptionParsingService: CliStepOptionParsingService,
+        loggingService: LoggingService) {
 
         privateScope.set(this, {
             steps: [],
             defaultIdentifiedStepOptionMaps: {},
             combinedIdentifiedStepOptionMaps: {},
-            cliStepOptionParser: cliStepOptionParser
+            cliStepOptionParsingService: cliStepOptionParsingService,
+            loggingService: loggingService
         })
 
         this.loadSteps(...stepList);
@@ -42,7 +46,11 @@ export class Continui {
     }
 
     public executeFromCli(cliArguments: any[]): void {
-        this.execute(privateScope.get(this).cliStepOptionParser.parse(cliArguments))
+        let scope = privateScope.get(this);
+
+        scope.loggingService.log('Executing continui from CLI')
+
+        this.execute(scope.cliStepOptionParsingService.parse(cliArguments, scope.steps.map(step => step.identifier)))
     }
 
     public execute(identifiedStepOptionMaps: IdentifiedStepOptionMaps): void {
@@ -52,8 +60,6 @@ export class Continui {
         scope.combinedIdentifiedStepOptionMaps = this.getCombinedIdentifiedStepOptionMaps(scope.defaultIdentifiedStepOptionMaps,
                                                                                           this.getOptionsFromRootFile(),
                                                                                           identifiedStepOptionMaps);
-
-        console.log(scope.combinedIdentifiedStepOptionMaps);
 
         let mainStepOptionMap: StepOptionValueMap = scope.combinedIdentifiedStepOptionMaps[mainIdentifier];
 

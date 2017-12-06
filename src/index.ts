@@ -2,14 +2,16 @@ import { Continui } from './continui';
 import { Activator } from './activator';
 import { BuildInActivator } from './buildInActivator';
 import { GitHubReleaseStep } from './build-in-steps/gitHub/release/gitHubReleaseStep';
-import { BuildInCliStepOptionParser } from './buildInCliStepOptionParser';
-import { BuildInTextTemplateService } from './buildInTextTemplateService';
+import { BuildInTextTemplateService } from './services/buildInTextTemplateService';
+import { BuildInCliStepOptionParsingService } from './services/buildInCliStepOptionParsingService';
+import { BuildInLoggingService } from './services/buildInLoggingService';
 
 
 let activator: Activator = new BuildInActivator()
 activator.register('step', GitHubReleaseStep)
+activator.register('loggingService', BuildInLoggingService)
 activator.register('textTemplateService', BuildInTextTemplateService)
-activator.register('cliStepOptionParser', BuildInCliStepOptionParser)
+activator.register('cliStepOptionParsingService', BuildInCliStepOptionParsingService)
 
 /**
  * Returns a new continui application ready to be executed.

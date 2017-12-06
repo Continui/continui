@@ -2,7 +2,6 @@
 import { Step } from "../../../step"
 import { StepOption } from "../../../stepOption";
 import { StepOptionValueMap } from "../../../types";
-import { TextTemplateService } from "../../../textTemplateService";
 import { GitHubReleaseContext } from "./gitHubReleaseContext"
 import * as stepOptionType from "../../../stepOptionType"
 
@@ -12,6 +11,7 @@ import * as FormData from 'form-data'
 
 import axios from 'axios'
 import co from 'co'
+import { TextTemplateService } from "../../../services/textTemplateService";
 
 
 let privateScope = new WeakMap<GitHubReleaseStep, {
@@ -79,10 +79,10 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
     public execute(stepOptionValueMap: StepOptionValueMap, context: GitHubReleaseContext): void {
 
         let textTemplateService: TextTemplateService = privateScope.get(this).textTemplateService;
+   
+        let assets:string[] = this.getNormalizedAssetsPaths(stepOptionValueMap.paths)
 
         co(function* () {
-
-            let assets:string[] = this.getNormalizedAssetsPaths(stepOptionValueMap.paths)
 
             yield axios.post(`https://api.github.com/repos/${stepOptionValueMap.owner}/${stepOptionValueMap.repository}/releases?access_token=${stepOptionValueMap.token}`, {
                 tag_name:  textTemplateService.tranform(stepOptionValueMap.tag),

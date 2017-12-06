@@ -1,3 +1,3 @@
-type textTemplateContext = { [key:string]: string }
+type textTemplateContext = { [key:string]: any }
 
 export { textTemplateContext as TextTemplateContext }
