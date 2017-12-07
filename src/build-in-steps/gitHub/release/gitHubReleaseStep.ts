@@ -32,7 +32,7 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
     /**
      * Get the step identifier.
      */
-    public get identifier(): string { return 'ghr' }
+    public get identifier(): string { return 'githubre' }
     
     /**
      * Get the step name.
@@ -245,11 +245,6 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
      * @returns A new execution context bases on the provided options.
      */
     public createsNewContextFromOptionsMap(stepOptionsMap: StepOptionValueMap): GitHubReleaseContext {
-        
-        console.log(stepOptionsMap);
-
-        let context:GitHubReleaseContext = new GitHubReleaseContext();
-
         return  new GitHubReleaseContext();
     }
 
