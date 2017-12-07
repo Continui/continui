@@ -30,37 +30,19 @@ export interface Step<Context> {
      * Creates a restoration point based on the step to rollback the changes in case that the pipe flow breaks.
      * @param context Represents the step execution context.
      */
-    createsRestaurationPoint(stepOptionValueMap: StepOptionValueMap, context: Context): void
-
-    /**
-     * Asynchronously creates a restoration point based on the step to rollback the changes in case that the pipe flow breaks.
-     * @param context Represents the step execution context.
-     */
-    createsRestaurationPointAsync(stepOptionValueMap: StepOptionValueMap, context: Context): Promise<void>
+    createsRestaurationPoint(stepOptionValueMap: StepOptionValueMap, context: Context): void | Promise<void> | IterableIterator<any>
 
     /**
      * Execute the step base on the given options and context.
      * @param context Represents the step execution context.
      */
-    execute(stepOptionValueMap: StepOptionValueMap, context: Context): void;
-
-    /**
-     * Asynchronously execute the step base on the given options and context.     
-     * @param context Represents the step execution context.
-     */
-    executeAsync(stepOptionValueMap: StepOptionValueMap, context: Context): Promise<void>;
+    execute(stepOptionValueMap: StepOptionValueMap, context: Context): void | Promise<void> | IterableIterator<any>;
     
     /**
      * Restore the step base on the given options and context.
      * @param context Represents the step execution context.
      */
-    restore(stepOptionValueMap: StepOptionValueMap, context: Context): void;
-    
-    /**
-     * Asynchronously restore the step base on the given options and context.     
-     * @param context Represents the step execution context.
-     */
-    restoreAsync(stepOptionValueMap: StepOptionValueMap, context: Context): Promise<void>;
+    restore(stepOptionValueMap: StepOptionValueMap, context: Context): void | Promise<void> | IterableIterator<any>;    
 
     /**
      * Creates and return an new context bases on the provided options.

@@ -2,11 +2,13 @@ import { Step } from "./step";
 
 import * as fs from 'fs'
 import * as path from 'path'
+import co from 'co'
 
 import { StepOption } from "./stepOption"
 import { StepOptionValueMap, IdentifiedStepOptionMaps } from "./types"
 import { CliStepOptionParsingService } from "./services/cliStepOptionParsingService";
 import { LoggingService } from "./services/loggingService";
+import { error } from "util";
 
 //let pkg = require('../package.json')
 
@@ -35,11 +37,13 @@ export class Continui {
         this.loadSteps(...stepList);
     }
 
-    public loadSteps(...steps: Step<any>[]): void {
-        
+    public loadSteps(...steps: Step<any>[]): void {        
         let scope = privateScope.get(this);
-
         steps.forEach(step => {
+            scope.defaultIdentifiedStepOptionMaps[step.identifier] = {} // TODO: do not allow same step identifier.
+            step.options.forEach(option => {
+                scope.defaultIdentifiedStepOptionMaps[step.identifier][option.key] = option.defaultValue             
+            })
 
             scope.steps.push(step)
         })
@@ -54,74 +58,80 @@ export class Continui {
     }
 
     public execute(identifiedStepOptionMaps: IdentifiedStepOptionMaps): void {
-        let scope = privateScope.get(this);
+        co(function*() {
+            let scope = privateScope.get(this);
 
-        let mainIdentifier: string = 'main';
-        scope.combinedIdentifiedStepOptionMaps = this.getCombinedIdentifiedStepOptionMaps(scope.defaultIdentifiedStepOptionMaps,
-                                                                                          this.getOptionsFromRootFile(),
-                                                                                          identifiedStepOptionMaps);
+            let mainIdentifier: string = 'main';
+            scope.combinedIdentifiedStepOptionMaps = this.getCombinedIdentifiedStepOptionMaps(scope.defaultIdentifiedStepOptionMaps,
+                                                                                            this.getOptionsFromRootFile(),
+                                                                                            identifiedStepOptionMaps);
 
-        let mainStepOptionMap: StepOptionValueMap = scope.combinedIdentifiedStepOptionMaps[mainIdentifier];
+            let mainStepOptionMap: StepOptionValueMap = scope.combinedIdentifiedStepOptionMaps[mainIdentifier];
 
-        if (!mainStepOptionMap) {
-            throw new Error('Main step is missing, it looks that you are not using continui from CLI, so you must provide the main step parameters.');
-        }
-        
-        let toRunSteps: string[] = mainStepOptionMap.steps || [];
-
-        if (mainStepOptionMap.needsVersion) {            
-            this.displayVersion();
-            return;
-        }   
-
-        if (mainStepOptionMap.needsHelp) {
-            this.displayHelp();
-            return;
-        }
-
-        this.validateStepIdentifiers(toRunSteps)
-
-        scope.loggingService.log(`Start steps execution`);
-
-        let executedStepContextMaps: { step: Step<any>, stepOptionValueMap: StepOptionValueMap, context: any }[] = []
-
-        for (let i = 0; i < toRunSteps.length; i++) {
-            let stepIdentifier: string = toRunSteps[i];
-
-            // I assume that the find function will always retrieve a step because his existence is
-            // previously validated by the validateStepIdentifiers function.
-            let step: Step<any> = this.getStep(stepIdentifier);
-            let stepOpionsMap: StepOptionValueMap = scope.combinedIdentifiedStepOptionMaps[stepIdentifier]
-
-            scope.loggingService.log(`Executing step ${step.identifier}(${step.name}) with options.`, 
-                                      ...Object.keys(stepOpionsMap).map(optionKey => `${optionKey}=${stepOpionsMap[optionKey]}`));
-            
-            let context: any
-
-            scope.loggingService.log(`Starting the from options context creation for the step ${step.identifier}(${step.name})`);
-            context = step.createsNewContextFromOptionsMap(stepOpionsMap)
-
-            scope.loggingService.log(`Starting the restauration point creation for the step ${step.identifier}(${step.name})`);
-            step.createsRestaurationPoint(stepOpionsMap, context)
-            
-            try {
-                executedStepContextMaps.push({step: step, stepOptionValueMap: stepOpionsMap, context: context})
-
-                scope.loggingService.log(`Starting the step execution ${step.identifier}(${step.name})`);
-                step.execute(stepOpionsMap, context)
-                scope.loggingService.log(`Step execution ${step.identifier}(${step.name}) ended`);
-
-            } catch (error) {
-                scope.loggingService.log(`Restoring steps executions due error on step ${step.identifier}(${step.name})`, 
-                                          error.message || error);
-                this.restoreExecutedStep(executedStepContextMaps)
-                scope.loggingService.log(`Execution fail.`);
-                
-                throw error
+            if (!mainStepOptionMap) {
+                throw new Error('Main step is missing, it looks that you are not using continui from CLI, so you must provide the main step parameters.');
             }
-        }
+            
+            let toRunSteps: string[] = mainStepOptionMap.steps || [];
 
-        scope.loggingService.log(`Execution done.`);
+            if (mainStepOptionMap.needsVersion) {            
+                this.displayVersion();
+                return;
+            }   
+
+            if (mainStepOptionMap.needsHelp) {
+                this.displayHelp();
+                return;
+            }
+
+            this.validateStepIdentifiers(toRunSteps)
+
+            scope.loggingService.log(`Start steps execution`);
+
+            let executedStepContextMaps: { step: Step<any>, stepOptionValueMap: StepOptionValueMap, context: any }[] = []
+
+            for (let i = 0; i < toRunSteps.length; i++) {
+                let stepIdentifier: string = toRunSteps[i];
+
+                // I assume that the find function will always retrieve a step because his existence is
+                // previously validated by the validateStepIdentifiers function.
+                let step: Step<any> = this.getStep(stepIdentifier);
+                let stepOpionsMap: StepOptionValueMap = scope.combinedIdentifiedStepOptionMaps[stepIdentifier]
+
+                try {
+                    let toDisplayOoptions = Object.keys(stepOpionsMap).map(optionKey => { 
+                        return `${optionKey}=${stepOpionsMap[optionKey] !== undefined ? stepOpionsMap[optionKey] : '[undefined]'}`
+                    })
+                    scope.loggingService.log(`Executing step ${step.identifier}(${step.name}) with options.`, ...toDisplayOoptions)
+                    
+                    let context: any
+
+                    scope.loggingService.log(`Starting the from options context creation for the step ${step.identifier}(${step.name})`);
+                    context = step.createsNewContextFromOptionsMap(stepOpionsMap)
+
+                    scope.loggingService.log(`Starting the restauration point creation for the step ${step.identifier}(${step.name})`);
+                    yield step.createsRestaurationPoint(stepOpionsMap, context) || []
+
+                    executedStepContextMaps.push({step: step, stepOptionValueMap: stepOpionsMap, context: context})
+
+                    scope.loggingService.log(`Starting the step execution ${step.identifier}(${step.name})`);
+                    yield step.execute(stepOpionsMap, context) || []
+                    scope.loggingService.log(`Step execution ${step.identifier}(${step.name}) ended successfully`);
+
+                } catch (error) {
+                    scope.loggingService.log(`Restoring steps executions due error on step ${step.identifier}(${step.name})`, 
+                                            error.message || error);
+                    yield this.restoreExecutedStep(executedStepContextMaps)
+                    scope.loggingService.log(`Execution fail.`);
+                    
+                    throw error
+                }
+            }
+            scope.loggingService.log(`Execution done.`);
+        }.bind(this)).catch(error => {
+            console.error('\n\n',error);
+            process.exit(1)
+        })
     }
 
     private getOptionsFromRootFile(): IdentifiedStepOptionMaps {
@@ -175,9 +185,9 @@ export class Continui {
         } else {
             throw new Error(`There is not any step with the identifier ${stepIdentifier}`)
         } 
-    }
+    }    
 
-    private restoreExecutedStep(executedStepContextMaps: { step: Step<any>, stepOptionValueMap: StepOptionValueMap, context: any }[]) {
+    private* restoreExecutedStep(executedStepContextMaps: { step: Step<any>, stepOptionValueMap: StepOptionValueMap, context: any }[]) : IterableIterator<any> {              
         let scope = privateScope.get(this)
 
         for (let i = executedStepContextMaps.length - 1; i >= 0; i--) {
@@ -185,12 +195,13 @@ export class Continui {
 
             try {
                 scope.loggingService.log(`Restoring step ${executedStepContextMap.step.identifier}(${executedStepContextMap.step.name})`)
-                executedStepContextMap.step.restore(executedStepContextMap.stepOptionValueMap, executedStepContextMap.context);
+                yield executedStepContextMap.step.restore(executedStepContextMap.stepOptionValueMap, executedStepContextMap.context) || []
             } catch(error) {
                 scope.loggingService.log(`Error restoring step ${executedStepContextMap.step.identifier}(${executedStepContextMap.step.name})`,
-                                          error.message || error)
+                                        error.message || error)
             }            
         }
+        
     }
 
     private validateStepIdentifiers(stepIdentifiers: string[]) {

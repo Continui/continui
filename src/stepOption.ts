@@ -17,7 +17,7 @@ export interface StepOption {
     /**
      * Represents the option default value.
      */
-    defaultValue:string
+    defaultValue?:string
 
     /**
      * Represents a boolean value specifying if the option is required.
@@ -33,9 +33,4 @@ export interface StepOption {
      * Represents the option primary type
      */
     primaryType:string
-
-    /**
-     * Represents the option primary type
-     */
-    secondaryType?:string
 }
