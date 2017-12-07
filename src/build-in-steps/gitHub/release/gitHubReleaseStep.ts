@@ -63,7 +63,7 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
     public* execute(stepOptionValueMap: StepOptionValueMap, context: GitHubReleaseContext): void | Promise<void> | IterableIterator<any> {
 
         let textTemplateService: TextTemplateService = privateScope.get(this).textTemplateService;
-        let assets:string[] = this.getNormalizedAssetsPaths(stepOptionValueMap.paths)
+        let assets:string[] = this.getNormalizedAssetsPaths(stepOptionValueMap.paths || [])
 
         yield axios.post(`https://api.github.com/repos/${stepOptionValueMap.owner}/${stepOptionValueMap.repository}/releases?access_token=${stepOptionValueMap.token}`, {
             tag_name:  textTemplateService.tranform(stepOptionValueMap.tag),
@@ -75,7 +75,7 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
         }).then(response => {
             context.id = response.data.id
             context.uploadURL = response.data.upload_url
-        })
+        }).catch(error => { throw error.response.data || 'undefined error creating release' });
 
         yield assets.map(asset => {
             let formData:FormData = new FormData(undefined)
