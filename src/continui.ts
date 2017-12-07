@@ -69,7 +69,7 @@ export class Continui {
         
         let toRunSteps: string[] = mainStepOptionMap.steps || [];
 
-        if (mainStepOptionMap.needsVersion) {
+        if (mainStepOptionMap.needsVersion) {            
             this.displayVersion();
             return;
         }   
@@ -81,7 +81,9 @@ export class Continui {
 
         this.validateStepIdentifiers(toRunSteps)
 
-        let executedStepContextMaps: { step: Step<any>, stepOptionValueMap: StepOptionValueMap, context: any }[] = [];
+        scope.loggingService.log(`Start steps execution`);
+
+        let executedStepContextMaps: { step: Step<any>, stepOptionValueMap: StepOptionValueMap, context: any }[] = []
 
         for (let i = 0; i < toRunSteps.length; i++) {
             let stepIdentifier: string = toRunSteps[i];
@@ -89,21 +91,37 @@ export class Continui {
             // I assume that the find function will always retrieve a step because his existence is
             // previously validated by the validateStepIdentifiers function.
             let step: Step<any> = this.getStep(stepIdentifier);
-            let stepOpionsMap: StepOptionValueMap = scope.combinedIdentifiedStepOptionMaps[stepIdentifier];
+            let stepOpionsMap: StepOptionValueMap = scope.combinedIdentifiedStepOptionMaps[stepIdentifier]
 
-            let context: any = step.createsNewContextFromOptionsMap(stepOpionsMap)
+            scope.loggingService.log(`Executing step ${step.identifier}(${step.name}) with options.`, 
+                                      ...Object.keys(stepOpionsMap).map(optionKey => `${optionKey}=${stepOpionsMap[optionKey]}`));
+            
+            let context: any
 
+            scope.loggingService.log(`Starting the from options context creation for the step ${step.identifier}(${step.name})`);
+            context = step.createsNewContextFromOptionsMap(stepOpionsMap)
+
+            scope.loggingService.log(`Starting the restauration point creation for the step ${step.identifier}(${step.name})`);
             step.createsRestaurationPoint(stepOpionsMap, context)
-
+            
             try {
-                executedStepContextMaps.push({step: step, stepOptionValueMap: stepOpionsMap, context: context});
+                executedStepContextMaps.push({step: step, stepOptionValueMap: stepOpionsMap, context: context})
+
+                scope.loggingService.log(`Starting the step execution ${step.identifier}(${step.name})`);
                 step.execute(stepOpionsMap, context)
-                
+                scope.loggingService.log(`Step execution ${step.identifier}(${step.name}) ended`);
+
             } catch (error) {
+                scope.loggingService.log(`Restoring steps executions due error on step ${step.identifier}(${step.name})`, 
+                                          error.message || error);
                 this.restoreExecutedStep(executedStepContextMaps)
-                break;
+                scope.loggingService.log(`Execution fail.`);
+                
+                throw error
             }
         }
+
+        scope.loggingService.log(`Execution done.`);
     }
 
     private getOptionsFromRootFile(): IdentifiedStepOptionMaps {
@@ -136,16 +154,21 @@ export class Continui {
     }
 
     private displayVersion() {
-        //console.log(pkg.version);
+        let scope = privateScope.get(this);
+
+        scope.loggingService.log('Version requested')
+        scope.loggingService.log('continui version: 1.0.0'); // TODO: Must log the package version.
     }
 
     private displayHelp() {
-        // TODO: Must implement the help generator and catching
-        console.log('Help is not implemented.');
+        let scope = privateScope.get(this);
+        
+        scope.loggingService.log('Help requested')
+        scope.loggingService.log('Help is not implemented.') // TODO: Must implement the help generator and catching
     }
 
-    private getStep(stepIdentifier: string): Step<any> | any {
-        let toReturn: Step<any> = privateScope.get(this).steps.find(step => step.identifier == stepIdentifier);
+    private getStep(stepIdentifier: string): Step<any> {
+        let toReturn: Step<any> = privateScope.get(this).steps.find(step => step.identifier == stepIdentifier)
 
         if (toReturn) {
             return toReturn
@@ -155,12 +178,18 @@ export class Continui {
     }
 
     private restoreExecutedStep(executedStepContextMaps: { step: Step<any>, stepOptionValueMap: StepOptionValueMap, context: any }[]) {
+        let scope = privateScope.get(this)
+
         for (let i = executedStepContextMaps.length - 1; i >= 0; i--) {
-            let executedStepContextMap = executedStepContextMaps[i];
+            let executedStepContextMap = executedStepContextMaps[i]
 
             try {
+                scope.loggingService.log(`Restoring step ${executedStepContextMap.step.identifier}(${executedStepContextMap.step.name})`)
                 executedStepContextMap.step.restore(executedStepContextMap.stepOptionValueMap, executedStepContextMap.context);
-            } catch(error) {}            
+            } catch(error) {
+                scope.loggingService.log(`Error restoring step ${executedStepContextMap.step.identifier}(${executedStepContextMap.step.name})`,
+                                          error.message || error)
+            }            
         }
     }
 
@@ -169,12 +198,16 @@ export class Continui {
             throw new Error('Must provided at least one step to run. eg. [continui mystep1 --mystep1.param1 "param1value" mystep2]')
         }  
 
-        let errorMessage:string = '';
-        let generalErrors: string[] = [];
+        let scope = privateScope.get(this)
+
+        let errorMessage:string = ''
+        let generalErrors: string[] = []
         let stepErrorsMaps: {
             step:Step<any>,
             errors:string[]
         }[] = [] 
+
+        scope.loggingService.log('Validating steps')
 
         stepIdentifiers.forEach(stepIdentifier => {
 

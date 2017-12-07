@@ -9,6 +9,7 @@ export class BuildInLoggingService implements LoggingService {
      * @param data Represents the data that will be logged.
      */
     public log(...data: string[]): void {
-        data.forEach(toLogData => console.log(toLogData))
+        let date: string = new Date().toTimeString().substr(0, 8)
+        data.forEach((toLogData, index) => console.log((index > 0 ? '  ' : `[${date}]`) + ` ${toLogData}`))
     }
 }
