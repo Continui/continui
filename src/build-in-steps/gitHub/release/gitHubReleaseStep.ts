@@ -75,7 +75,7 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
         }).then(response => {
             context.id = response.data.id
             context.uploadURL = response.data.upload_url
-        }).catch(error => { throw error.response.data || 'undefined error creating release' });
+        }).catch(error => { throw (error.response.data || 'undefined error creating release') });
 
         yield assets.map(asset => {
             let formData:FormData = new FormData(undefined)
@@ -83,7 +83,7 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
 
             return axios.post(context.uploadURL.replace('{?name,label}', '?name=' + path.basename(asset)), formData, {
                 headers: formData.getHeaders()
-            })
+            }).catch(error => { throw (error.response.data || 'undefined error creating release') });
         })               
     }   
     
@@ -116,73 +116,62 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
             key: 'token',
             description: 'Represents the git hub token to comunicate with the API',
             isRequired: true,
-            isTemplated: false,
-            primaryType: stepOptionType.text
+            isSecure: true,
+            type: stepOptionType.text
         },
         {
             key: 'owner',
             description: 'Represents the owner name of the repository.',
             isRequired: true,
-            isTemplated: false,
-            primaryType: stepOptionType.text
+            type: stepOptionType.text
         },
         {
             key: 'repository',
             description: 'Represents the repository that will be released.',
             isRequired: true,
-            isTemplated: false,
-            primaryType: stepOptionType.text
+            type: stepOptionType.text
         },
         {
             key: 'tag',
             description: 'Represents the tag where the release will be based on.',
-            isRequired: false,
             isTemplated: true,
-            primaryType: stepOptionType.text
+            type: stepOptionType.text
         },
         {
             key: 'target',
             description: 'Represents the target were the tag will be based on, if the tag already exist must not be provided.',
-            isRequired: false,
             isTemplated: true,
-            primaryType: stepOptionType.text
+            type: stepOptionType.text
         },
         {
             key: 'name',
             description: 'Represents the release name.',
             isRequired: true,
             isTemplated: true,
-            primaryType: stepOptionType.text
+            type: stepOptionType.text
         },
         {
             key: 'description',
             description: 'Represents the release description.',
-            isRequired: false,
             isTemplated: true,
-            primaryType: stepOptionType.text
+            type: stepOptionType.text
         },
         {
             key: 'draft',
             description: 'Represents a boolean value specifying if the release is a draft.',
-            defaultValue: 'false',
-            isRequired: false,
-            isTemplated: false,
-            primaryType: stepOptionType.boolean
+            defaultValue: false,
+            type: stepOptionType.boolean
         },
         {
             key: 'pre',
             description: 'Represents a boolean value specifying if the release is a pre-release',
-            defaultValue: 'false',
-            isRequired: false,
-            isTemplated: false,
-            primaryType: stepOptionType.boolean
+            defaultValue: false,
+            type: stepOptionType.boolean
         },
         {
-            key: 'paths',
+            key: 'asset',
             description: 'Represents a list of paths that represents the assets that will be uploaded.',
-            isRequired: false,
-            isTemplated: false,
-            primaryType: stepOptionType.list
+            type: stepOptionType.list
         }];        
     }    
 

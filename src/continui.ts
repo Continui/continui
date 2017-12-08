@@ -9,6 +9,7 @@ import { StepOptionValueMap, IdentifiedStepOptionMaps } from "./types"
 import { CliStepOptionParsingService } from "./services/cliStepOptionParsingService";
 import { LoggingService } from "./services/loggingService";
 import { error } from "util";
+import { TextSecureService } from "./services/textSecureService";
 
 //let pkg = require('../package.json')
 
@@ -17,6 +18,7 @@ let privateScope: WeakMap<Continui, {
     defaultIdentifiedStepOptionMaps: IdentifiedStepOptionMaps
     combinedIdentifiedStepOptionMaps: IdentifiedStepOptionMaps
     cliStepOptionParsingService: CliStepOptionParsingService
+    textSecureService: TextSecureService
     loggingService: LoggingService
 }> = new WeakMap();
 
@@ -24,6 +26,7 @@ export class Continui {
 
     constructor(stepList: Step<any>[],
         cliStepOptionParsingService: CliStepOptionParsingService,
+        textSecureService: TextSecureService,
         loggingService: LoggingService) {
 
         privateScope.set(this, {
@@ -31,6 +34,7 @@ export class Continui {
             defaultIdentifiedStepOptionMaps: {},
             combinedIdentifiedStepOptionMaps: {},
             cliStepOptionParsingService: cliStepOptionParsingService,
+            textSecureService: textSecureService,
             loggingService: loggingService
         })
 
@@ -42,7 +46,7 @@ export class Continui {
         steps.forEach(step => {
             scope.defaultIdentifiedStepOptionMaps[step.identifier] = {} // TODO: do not allow same step identifier.
             step.options.forEach(option => {
-                scope.defaultIdentifiedStepOptionMaps[step.identifier][option.key] = option.defaultValue             
+                scope.defaultIdentifiedStepOptionMaps[step.identifier][option.key] = option.defaultValue                          
             })
 
             scope.steps.push(step)
@@ -63,8 +67,10 @@ export class Continui {
 
             let mainIdentifier: string = 'main';
             scope.combinedIdentifiedStepOptionMaps = this.getCombinedIdentifiedStepOptionMaps(scope.defaultIdentifiedStepOptionMaps,
-                                                                                            this.getOptionsFromRootFile(),
-                                                                                            identifiedStepOptionMaps);
+                                                                                              this.getOptionsFromRootFile(),
+                                                                                              identifiedStepOptionMaps);
+
+            this.registerSensitiveText()
 
             let mainStepOptionMap: StepOptionValueMap = scope.combinedIdentifiedStepOptionMaps[mainIdentifier];
 
@@ -137,6 +143,10 @@ export class Continui {
     private getOptionsFromRootFile(): IdentifiedStepOptionMaps {
         let filePath: string = path.resolve(__dirname, 'continui.json')
         return fs.existsSync(filePath) ? require(filePath) : {};
+    }
+
+    private registerSensitiveText() {
+
     }
 
     private getCombinedIdentifiedStepOptionMaps(...identifiedStepOptionMaps: IdentifiedStepOptionMaps[]): IdentifiedStepOptionMaps {

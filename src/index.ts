@@ -5,11 +5,13 @@ import { GitHubReleaseStep } from './build-in-steps/gitHub/release/gitHubRelease
 import { BuildInTextTemplateService } from './services/buildInTextTemplateService';
 import { BuildInCliStepOptionParsingService } from './services/buildInCliStepOptionParsingService';
 import { BuildInLoggingService } from './services/buildInLoggingService';
+import { BuildInTextSecureService } from './services/buidInTextSecureService';
 
 
 let activator: Activator = new BuildInActivator()
 activator.register('step', GitHubReleaseStep)
 activator.register('loggingService', BuildInLoggingService)
+activator.register('textSecureService', BuildInTextSecureService)
 activator.register('textTemplateService', BuildInTextTemplateService)
 activator.register('cliStepOptionParsingService', BuildInCliStepOptionParsingService)
 
