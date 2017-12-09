@@ -1,15 +1,14 @@
 import { Continui } from './continui';
 import { Activator } from './activator';
 import { BuildInActivator } from './buildInActivator';
-import { GitHubReleaseStep } from './build-in-steps/gitHub/release/gitHubReleaseStep';
+import { GitHubReleaseStep } from './build-in-steps/github-release/gitHubReleaseStep';
 import { BuildInTextTemplateService } from './services/buildInTextTemplateService';
 import { BuildInCliStepOptionParsingService } from './services/buildInCliStepOptionParsingService';
 import { BuildInLoggingService } from './services/buildInLoggingService';
 import { BuildInTextSecureService } from './services/buidInTextSecureService';
 
-
 let activator: Activator = new BuildInActivator()
-activator.register('step', GitHubReleaseStep)
+activator.register('step', GitHubReleaseStep) 
          .register('loggingService', BuildInLoggingService)
          .register('textTemplateService', BuildInTextTemplateService)
          .register('cliStepOptionParsingService', BuildInCliStepOptionParsingService)
