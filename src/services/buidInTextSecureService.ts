@@ -21,7 +21,7 @@ export class BuildInTextSecureService implements TextSecureService {
      * @param sensitiveText Represents a sensitive text.
      */
     public registerSersitiveText(sensitiveText: string): void {
-        if (!sensitiveText) {
+        if (sensitiveText) {
             privateScope.get(this).sensitiveText.push(sensitiveText);
         }   
     }
@@ -32,7 +32,7 @@ export class BuildInTextSecureService implements TextSecureService {
      * @returns A secure transformed text.
      */
     public tranform(insecureText: string): string {
-        privateScope.get(this).sensitiveText.forEach(sensitiveText => insecureText = insecureText.replace(new RegExp(insecureText,"g"), '[secure]'))
+        privateScope.get(this).sensitiveText.forEach(sensitiveText => insecureText = insecureText.replace(new RegExp(sensitiveText,"g"), '[secure]'))
         return insecureText;
     }
 }

@@ -146,7 +146,15 @@ export class Continui {
     }
 
     private registerSensitiveText() {
+        let scope = privateScope.get(this);
 
+        scope.steps.forEach(step => {
+            step.options.forEach(option => {
+                if (option.isSecure) {
+                    scope.textSecureService.registerSersitiveText(scope.combinedIdentifiedStepOptionMaps[step.identifier][option.key])
+                }
+            })
+        })
     }
 
     private getCombinedIdentifiedStepOptionMaps(...identifiedStepOptionMaps: IdentifiedStepOptionMaps[]): IdentifiedStepOptionMaps {
