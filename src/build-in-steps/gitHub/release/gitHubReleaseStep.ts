@@ -3,15 +3,14 @@ import { Step } from "../../../step"
 import { StepOption } from "../../../stepOption";
 import { StepOptionValueMap } from "../../../types";
 import { GitHubReleaseContext } from "./gitHubReleaseContext"
-import * as stepOptionType from "../../../stepOptionType"
+import { TextTemplateService } from "../../../services/textTemplateService";
+import { Stats } from "fs";
 
+import * as stepOptionType from "../../../stepOptionType"
 import * as fs from 'fs'
 import * as path from 'path'
-import * as FormData from 'form-data'
 
 import axios from 'axios'
-import { TextTemplateService } from "../../../services/textTemplateService";
-
 
 let privateScope = new WeakMap<GitHubReleaseStep, {
     textTemplateService: TextTemplateService
@@ -63,7 +62,7 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
     public* execute(stepOptionValueMap: StepOptionValueMap, context: GitHubReleaseContext): void | Promise<void> | IterableIterator<any> {
 
         let textTemplateService: TextTemplateService = privateScope.get(this).textTemplateService;
-        let assets:string[] = this.getNormalizedAssetsPaths(stepOptionValueMap.paths || [])
+        let assets:string[] = this.getNormalizedAssetsPaths(stepOptionValueMap.asset || [])
 
         yield axios.post(`https://api.github.com/repos/${stepOptionValueMap.owner}/${stepOptionValueMap.repository}/releases?access_token=${stepOptionValueMap.token}`, {
             tag_name:  textTemplateService.tranform(stepOptionValueMap.tag),
@@ -78,12 +77,15 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
         }).catch(error => { throw (error.response.data || 'undefined error creating release') });
 
         yield assets.map(asset => {
-            let formData:FormData = new FormData(undefined)
-            formData.append('data-binary', fs.createReadStream(asset))
+            let fileStats: Stats = fs.statSync(asset);
 
-            return axios.post(context.uploadURL.replace('{?name,label}', '?name=' + path.basename(asset)), formData, {
-                headers: formData.getHeaders()
-            }).catch(error => { throw (error.response.data || 'undefined error creating release') });
+            return axios.post(context.uploadURL.replace('{?name,label}', '?name=' + path.basename(asset)), fs.createReadStream(asset), {
+                headers: {
+                    'content-type': 'multipart/form-data',
+                    'content-length': fileStats.size,
+                    'authorization': 'token ' + stepOptionValueMap.token
+                }
+            }).catch(error => { throw (error.response.data || 'undefined error uploaing release asset ' + asset) });
         })               
     }   
     
@@ -93,7 +95,11 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
      */
     public* restore(stepOptionValueMap: StepOptionValueMap, context: GitHubReleaseContext): void | Promise<void> | IterableIterator<any> {
         if (context.id) {           
-            yield axios.delete(`https://api.github.com/repos/${stepOptionValueMap.owner}/${stepOptionValueMap.repository}/` + context.id)              
+            yield axios.delete(`https://api.github.com/repos/${stepOptionValueMap.owner}/${stepOptionValueMap.repository}/releases/` + context.id, {
+                headers: {
+                    'authorization': 'token ' + stepOptionValueMap.token
+                }
+            })              
         }
     }
 
@@ -180,20 +186,23 @@ export class GitHubReleaseStep implements Step<GitHubReleaseContext> {
             assets = [assets];
         }
 
-        let unexistingAssets: string[] = [];
+        let normalizedAssets: string[] = []
+        let unexistingAssets: string[] = []
 
         assets.forEach(asset => {
             asset = path.resolve(asset)
 
             if (!fs.existsSync(asset)) {
                 unexistingAssets.push(asset)
-            } 
+            } else {
+                normalizedAssets.push(asset)
+            }
         });
 
         if (unexistingAssets.length) {
-            throw new Error('The following assets are can not be located: \n\n' + unexistingAssets.join('\n'))
+            throw new Error('The following assets can not be located: \n\n' + unexistingAssets.join('\n'))
         } else {
-            return assets;
+            return normalizedAssets;
         }
     }
 }
