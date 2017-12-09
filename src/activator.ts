@@ -6,9 +6,10 @@ export interface Activator {
      * Register dependencies with the provided alias.
      * @param alias Represents the dependency alias.
      * @param target Represents the dependency.
+     * @param perResolution Represents a boolean value specifying if the target will be delivered once per rsolution.
      * @returns The activator instance to fluently register dependencies.
      */
-    register(alias:string, target: any) : Activator 
+    register(alias:string, target: any, perResolution?: boolean) : Activator 
 
     /**
      * Resolve the dependency with the provided alias.
