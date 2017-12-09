@@ -10,10 +10,12 @@ import { CliStepOptionParsingService } from "./services/cliStepOptionParsingServ
 import { LoggingService } from "./services/loggingService";
 import { error } from "util";
 import { TextSecureService } from "./services/textSecureService";
+import { fail } from "assert";
 
 //let pkg = require('../package.json')
 
 let privateScope: WeakMap<Continui, {
+    isCliMode: boolean
     steps: Step<any>[]
     defaultIdentifiedStepOptionMaps: IdentifiedStepOptionMaps
     combinedIdentifiedStepOptionMaps: IdentifiedStepOptionMaps
@@ -30,6 +32,7 @@ export class Continui {
         loggingService: LoggingService) {
 
         privateScope.set(this, {
+            isCliMode: false,
             steps: [],
             defaultIdentifiedStepOptionMaps: {},
             combinedIdentifiedStepOptionMaps: {},
@@ -53,10 +56,11 @@ export class Continui {
         })
     }
 
-    public executeFromCli(cliArguments: any[]): void {
+    public executeInCliMode(cliArguments: any[]): void {
         let scope = privateScope.get(this);
 
-        scope.loggingService.log('Executing continui from CLI')
+        scope.isCliMode = true
+        scope.loggingService.log('Executing continui in CLI mode')
 
         this.execute(scope.cliStepOptionParsingService.parse(cliArguments, scope.steps.map(step => step.identifier)))
     }
@@ -134,6 +138,10 @@ export class Continui {
                 }
             }
             scope.loggingService.log(`Execution done.`);
+
+            if (scope.isCliMode) {
+                process.exit(0)
+            }
         }.bind(this)).catch(error => {
             console.error('\n\n',error);
             process.exit(1)
@@ -215,8 +223,7 @@ export class Continui {
                 scope.loggingService.log(`Restoring step ${executedStepContextMap.step.identifier}(${executedStepContextMap.step.name})`)
                 yield executedStepContextMap.step.restore(executedStepContextMap.stepOptionValueMap, executedStepContextMap.context) || []
             } catch(error) {
-                scope.loggingService.log(`Error restoring step ${executedStepContextMap.step.identifier}(${executedStepContextMap.step.name})`,
-                                        error.message || error)
+                scope.loggingService.log(`Error restoring step ${executedStepContextMap.step.identifier}(${executedStepContextMap.step.name})`, error)
             }            
         }
         
