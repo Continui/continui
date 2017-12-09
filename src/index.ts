@@ -10,10 +10,10 @@ import { BuildInTextSecureService } from './services/buidInTextSecureService';
 
 let activator: Activator = new BuildInActivator()
 activator.register('step', GitHubReleaseStep)
-activator.register('loggingService', BuildInLoggingService)
-activator.register('textSecureService', BuildInTextSecureService)
-activator.register('textTemplateService', BuildInTextTemplateService)
-activator.register('cliStepOptionParsingService', BuildInCliStepOptionParsingService)
+         .register('loggingService', BuildInLoggingService)
+         .register('textTemplateService', BuildInTextTemplateService)
+         .register('cliStepOptionParsingService', BuildInCliStepOptionParsingService)
+         .register('textSecureService', BuildInTextSecureService, true)
 
 /**
  * Returns a new continui application ready to be executed.

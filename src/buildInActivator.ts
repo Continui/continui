@@ -1,6 +1,5 @@
 import { Activator } from './activator';
 import { createKernel, Kernel } from '@jems/di'
-import { fail } from 'assert';
 
 let privateScope:WeakMap<BuildInActivator, {
     kernel: Kernel
