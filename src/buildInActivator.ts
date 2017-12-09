@@ -1,5 +1,6 @@
 import { Activator } from './activator';
 import { createKernel, Kernel } from '@jems/di'
+import { fail } from 'assert';
 
 let privateScope:WeakMap<BuildInActivator, {
     kernel: Kernel
@@ -20,10 +21,15 @@ export class BuildInActivator implements Activator {
      * Register dependencies with the provided alias.
      * @param alias Represents the dependency alias.
      * @param target Represents the dependency.
+     * @param perResolution Represents a boolean value specifying if the target will be delivered once per rsolution.
      * @returns The activator instance to fluently register dependencies.
      */
-    public register(alias:string, target: any) : Activator {
-        privateScope.get(this).kernel.bind(alias).to(target)
+    register(alias:string, target: any, perResolution: boolean = false) : Activator  {
+        let bind =  privateScope.get(this).kernel.bind(alias).to(target)
+
+        if (perResolution) {
+            bind.inPerResolutionMode()
+        }
 
         return this;
     }
