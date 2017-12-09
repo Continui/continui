@@ -1,9 +1,4 @@
 import { Step } from "./step";
-
-import * as fs from 'fs'
-import * as path from 'path'
-import co from 'co'
-
 import { StepOption } from "./stepOption"
 import { StepOptionValueMap, IdentifiedStepOptionMaps } from "./types"
 import { CliStepOptionParsingService } from "./services/cliStepOptionParsingService";
@@ -11,6 +6,13 @@ import { LoggingService } from "./services/loggingService";
 import { error } from "util";
 import { TextSecureService } from "./services/textSecureService";
 import { fail } from "assert";
+import { HelpGenerationService } from "./services/helpGenerationService";
+
+import * as fs from 'fs'
+import * as path from 'path'
+import * as stepOptionType from "./stepOptionType"
+
+import co from 'co'
 
 //let pkg = require('../package.json')
 
@@ -22,6 +24,7 @@ let privateScope: WeakMap<Continui, {
     cliStepOptionParsingService: CliStepOptionParsingService
     textSecureService: TextSecureService
     loggingService: LoggingService
+    helpGenerationService: HelpGenerationService
 }> = new WeakMap();
 
 export class Continui {
@@ -29,7 +32,8 @@ export class Continui {
     constructor(stepList: Step<any>[],
         cliStepOptionParsingService: CliStepOptionParsingService,
         textSecureService: TextSecureService,
-        loggingService: LoggingService) {
+        loggingService: LoggingService,
+        helpGenerationService: HelpGenerationService) {
 
         privateScope.set(this, {
             isCliMode: false,
@@ -38,7 +42,8 @@ export class Continui {
             combinedIdentifiedStepOptionMaps: {},
             cliStepOptionParsingService: cliStepOptionParsingService,
             textSecureService: textSecureService,
-            loggingService: loggingService
+            loggingService: loggingService,
+            helpGenerationService: helpGenerationService
         })
 
         this.loadSteps(...stepList);
@@ -82,26 +87,39 @@ export class Continui {
                 throw new Error('Main step is missing, it looks that you are not using continui from CLI, so you must provide the main step parameters.');
             }
             
-            let toRunSteps: string[] = mainStepOptionMap.steps || [];
+            let providedStepsIdentifiers: string[] = mainStepOptionMap.steps || [];            
+            
+            if (providedStepsIdentifiers.length) {
+                this.validateIdentifiersExistence(providedStepsIdentifiers)
+            }
 
             if (mainStepOptionMap.needsVersion) {            
                 this.displayVersion();
                 return;
-            }   
+            }
 
             if (mainStepOptionMap.needsHelp) {
-                this.displayHelp();
+                this.displayHelp(providedStepsIdentifiers);
                 return;
             }
 
-            this.validateStepIdentifiers(toRunSteps)
+            if (mainStepOptionMap.needsSteps) {
+                this.displaySteps();
+                return;
+            }
+
+            if (!providedStepsIdentifiers.length) {
+                throw new Error('Must provided at least one step to run. eg. [continui mystep1 --mystep1.param1 "param1value" mystep2]')
+            } 
+
+            this.validateRequiredOptionProvision(providedStepsIdentifiers)
 
             scope.loggingService.log(`Start steps execution`);
 
             let executedStepContextMaps: { step: Step<any>, stepOptionValueMap: StepOptionValueMap, context: any }[] = []
 
-            for (let i = 0; i < toRunSteps.length; i++) {
-                let stepIdentifier: string = toRunSteps[i];
+            for (let i = 0; i < providedStepsIdentifiers.length; i++) {
+                let stepIdentifier: string = providedStepsIdentifiers[i];
 
                 // I assume that the find function will always retrieve a step because his existence is
                 // previously validated by the validateStepIdentifiers function.
@@ -196,11 +214,20 @@ export class Continui {
         scope.loggingService.log('continui version: 1.0.0'); // TODO: Must log the package version.
     }
 
-    private displayHelp() {
+    private displayHelp(providedStepsIdentifiers: string[]) {
         let scope = privateScope.get(this);
-        
-        scope.loggingService.log('Help requested')
-        scope.loggingService.log('Help is not implemented.') // TODO: Must implement the help generator and catching
+        let generatedHelp: string = providedStepsIdentifiers.length ? 
+                                        scope.helpGenerationService.getStepsHelp(...scope.steps):
+                                        scope.helpGenerationService.getStepOptionsHelp(...this.getOptions())
+
+        scope.loggingService.log('Help requested', '\n' + generatedHelp)
+    }
+
+    private displaySteps() {
+        let scope = privateScope.get(this);
+
+        scope.loggingService.log('Steps requested', 
+                                 '\n' + scope.steps.map(step => `${step.identifier}(${step.name})`))
     }
 
     private getStep(stepIdentifier: string): Step<any> {
@@ -229,34 +256,63 @@ export class Continui {
         
     }
 
-    private validateStepIdentifiers(stepIdentifiers: string[]) {
-        if (!stepIdentifiers.length) {
-            throw new Error('Must provided at least one step to run. eg. [continui mystep1 --mystep1.param1 "param1value" mystep2]')
-        }  
+    private getOptions(): StepOption[] {
+        return [
+            {
+                key: 'help',
+                type: stepOptionType.boolean,
+                description: '(-h) Make the tool display the help, if steps are provided, the steps help will be displayed.'
+            },
+            {
+                key: 'version',
+                type: stepOptionType.boolean,
+                description: '(-v) Make the tool display the version.'
+            },
+            {
+                key: 'steps',
+                type: stepOptionType.boolean,
+                description: '(-s) Make the tool display the available steps.'
+            }
+        ]
+    }
 
+    private validateIdentifiersExistence(stepIdentifiers: string[]) {
         let scope = privateScope.get(this)
+        let generalErrors: string[] = []      
 
+        scope.loggingService.log('Validating steps idntifiers existence')
+
+        stepIdentifiers.forEach(stepIdentifier => {
+            try {
+                this.getStep(stepIdentifier);
+            } catch(e) {
+                generalErrors.push(e.message || e)
+            }
+        })
+
+        if (generalErrors.length) {
+            throw new Error('\n' + generalErrors.join('\n'))
+        }
+    }
+
+    private validateRequiredOptionProvision(stepIdentifiers: string[]) {
+        let scope = privateScope.get(this)
         let errorMessage:string = ''
-        let generalErrors: string[] = []
         let stepErrorsMaps: {
             step:Step<any>,
             errors:string[]
-        }[] = [] 
-
-        scope.loggingService.log('Validating steps')
-
+        }[] = []       
+        
+        scope.loggingService.log('Validating steps required options provision')
+        
         stepIdentifiers.forEach(stepIdentifier => {
 
             let step: Step<any>;
             let stepOptionMap: StepOptionValueMap;
             let stepErrors: string[] = [];
-            
-            try {
-                step = this.getStep(stepIdentifier);
-                stepOptionMap = privateScope.get(this).combinedIdentifiedStepOptionMaps[step.identifier] || {};
-            } catch(e) {
-                generalErrors.push(e.message || e)
-            }
+
+            step = this.getStep(stepIdentifier);
+            stepOptionMap = privateScope.get(this).combinedIdentifiedStepOptionMaps[step.identifier] || {};
             
             if (step && step.options) {
                 step.options.filter(option => option.isRequired).forEach(option => {
@@ -270,10 +326,6 @@ export class Continui {
                 stepErrorsMaps.push({step: step, errors: stepErrors});
             }
         })
-
-        if (generalErrors.length) {
-            errorMessage += '\nGeneral Errors \n' +  generalErrors.join('\n') + '\n'
-        }
 
         if (stepErrorsMaps.length) {
             stepErrorsMaps.forEach(stepErrorMap => {

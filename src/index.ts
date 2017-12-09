@@ -6,12 +6,14 @@ import { BuildInTextTemplateService } from './services/buildInTextTemplateServic
 import { BuildInCliStepOptionParsingService } from './services/buildInCliStepOptionParsingService';
 import { BuildInLoggingService } from './services/buildInLoggingService';
 import { BuildInTextSecureService } from './services/buidInTextSecureService';
+import { BuildInHelpGenerationService } from './services/buildInHelpGenerationService'
 
 let activator: Activator = new BuildInActivator()
 activator.register('step', GitHubReleaseStep) 
          .register('loggingService', BuildInLoggingService)
          .register('textTemplateService', BuildInTextTemplateService)
          .register('cliStepOptionParsingService', BuildInCliStepOptionParsingService)
+         .register('helpGenerationService', BuildInHelpGenerationService)
          .register('textSecureService', BuildInTextSecureService, true)
 
 /**

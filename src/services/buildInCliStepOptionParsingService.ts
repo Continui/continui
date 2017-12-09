@@ -20,7 +20,8 @@ export class BuildInCliStepOptionParsingService implements CliStepOptionParsingS
         identifiedStepOptionMap['main'] = {
             steps: minimistParsedArguments._,
             needsVersion: !!(minimistParsedArguments.v || minimistParsedArguments.version),
-            needsHelp: !!(minimistParsedArguments.h || minimistParsedArguments.help)
+            needsHelp: !!(minimistParsedArguments.h || minimistParsedArguments.help),
+            needsSteps: !!(minimistParsedArguments.s || minimistParsedArguments.steps)
         }
 
         stepIdentifiers.forEach(stepIdentifier => {
