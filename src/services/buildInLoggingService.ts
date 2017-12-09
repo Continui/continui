@@ -25,6 +25,6 @@ export class BuildInLoggingService implements LoggingService {
         data.forEach((toLogData, index) => 
                         console.log((index > 0 ? '  ' : `[${date}]`) + ` ${privateScope.get(this)
                                                                                        .textSecureService
-                                                                                       .tranform(toLogData)}`))
+                                                                                       .tranform(JSON.stringify(toLogData))}`))
     }
 }
