@@ -22,9 +22,13 @@ export class BuildInLoggingService implements LoggingService {
      */
     public log(...data: string[]): void {
         let date: string = new Date().toTimeString().substr(0, 8)
-        data.forEach((toLogData, index) => 
-                        console.log((index > 0 ? '  ' : `[${date}]`) + ` ${privateScope.get(this)
-                                                                                       .textSecureService
-                                                                                       .tranform(JSON.stringify(toLogData))}`))
+        data.forEach((toLogData, index) => {
+            let toDisplayText: string = typeof toLogData === 'string' ? toLogData : JSON.stringify(toLogData)
+            toDisplayText = privateScope.get(this)
+                                        .textSecureService
+                                        .tranform(toDisplayText)
+
+            console.log((index > 0 ? '  ' : `[${date}]`) + ` ${toDisplayText}`)
+        })
     }
 }
