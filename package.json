@@ -32,7 +32,15 @@
     "minimist": "^1.2.0"
   },
   "devDependencies": {
+    "@types/mocha": "^2.2.44",
     "@types/node": "^8.0.53",
+    "gulp": "^3.9.1",
+    "gulp-merge": "^0.1.1",
+    "gulp-mocha": "^4.3.1",
+    "gulp-tslint": "^8.1.2",
+    "gulp-typescript": "^3.2.3",
+    "gulp-zip": "^4.0.0",
+    "typemoq": "^2.1.0",
     "typescript": "^2.6.2"
   }
 }
