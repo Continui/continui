@@ -52,7 +52,12 @@ export class Continui {
     public loadSteps(...steps: Step<any>[]): void {        
         let scope = privateScope.get(this);
         steps.forEach(step => {
-            scope.defaultIdentifiedStepOptionMaps[step.identifier] = {} // TODO: do not allow same step identifier.
+
+            if (scope.steps.find(addedStep => step.identifier == addedStep.identifier)) {
+                throw new Error(`There is already an step with the identifier ${step.identifier}`)
+            }
+
+            scope.defaultIdentifiedStepOptionMaps[step.identifier] = {}
             step.options.forEach(option => {
                 scope.defaultIdentifiedStepOptionMaps[step.identifier][option.key] = option.defaultValue                          
             })
