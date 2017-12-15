@@ -1,5 +1,6 @@
 import { Activator } from './activator';
 import { createKernel, Kernel } from '@jems/di'
+import { ActivatorReference } from './activatorReference';
 
 let privateScope:WeakMap<BuildInActivator, {
     kernel: Kernel
@@ -18,27 +19,34 @@ export class BuildInActivator implements Activator {
 
     /**
      * Register dependencies with the provided alias.
-     * @param alias Represents the dependency alias.
-     * @param target Represents the dependency.
-     * @param perResolution Represents a boolean value specifying if the target will be delivered once per rsolution.
+     * @param reference Represents the reference that will be registered.
      * @returns The activator instance to fluently register dependencies.
      */
-    register(alias:string, target: any, perResolution: boolean = false) : Activator  {
-        let bind =  privateScope.get(this).kernel.bind(alias).to(target)
-
-        if (perResolution) {
+    public registerReference(reference: ActivatorReference) : Activator {
+        let bind =  privateScope.get(this).kernel.bind(reference.alias).to(reference.target)
+        
+        if (reference.perResolution) {
             bind.inPerResolutionMode()
         }
 
         return this;
     }
-
+    
     /**
      * Resolve the dependency with the provided alias.
      * @param alias Represents the dependency alias.
      * @returns The activator instance to fluently register dependencies.
      */
-    public  resolve<DependencyType>(aliasOrTarget:any) : DependencyType {
+    public resolveReference<DependencyType>(aliasOrTarget: any) : DependencyType {
         return <DependencyType>privateScope.get(this).kernel.resolve(aliasOrTarget)
+    }
+
+    /**
+     * Returns a boolean value specifying if the activation has a dependency registered with the provided alias.
+     * @param alias Represents the alias to look for.
+     * @returns A boolean value.
+     */
+    public hasReference(alias: string): boolean {
+        return privateScope.get(this).kernel.canResolve(alias)
     }
 }

@@ -1,20 +1,27 @@
+import { ActivatorReference } from "./activatorReference";
+
 /**
  * Represenst an activator that can register and solve depencencies.
  */
 export interface Activator {
     /**
      * Register dependencies with the provided alias.
-     * @param alias Represents the dependency alias.
-     * @param target Represents the dependency.
-     * @param perResolution Represents a boolean value specifying if the target will be delivered once per rsolution.
+     * @param reference Represents the reference that will be registered.
      * @returns The activator instance to fluently register dependencies.
      */
-    register(alias:string, target: any, perResolution?: boolean) : Activator 
+    registerReference(reference: ActivatorReference) : Activator 
 
     /**
      * Resolve the dependency with the provided alias.
      * @param alias Represents the dependency alias.
      * @returns The activator instance to fluently register dependencies.
      */
-    resolve<DependencyType>(aliasOrTarget: any) : DependencyType;
+    resolveReference<DependencyType>(aliasOrTarget: any) : DependencyType;
+
+    /**
+     * Returns a boolean value specifying if the activation has a dependency registered with the provided alias.
+     * @param alias Represents the alias to look for.
+     * @returns A boolean value.
+     */
+    hasReference(alias: string): boolean;
 }
