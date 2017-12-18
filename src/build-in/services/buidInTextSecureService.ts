@@ -1,5 +1,5 @@
 import { error } from "util";
-import { TextSecureService } from "./textSecureService";
+import { TextSecureService } from "../../services/textSecureService";
 
 let privateScope: WeakMap<BuildInTextSecureService, {
     sensitiveText: string[]

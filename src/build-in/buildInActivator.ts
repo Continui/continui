@@ -1,6 +1,6 @@
-import { Activator } from './activator';
+import { Activator } from '../activator';
 import { createKernel, Kernel } from '@jems/di'
-import { ActivatorReference } from './activatorReference';
+import { ActivatorReference } from '../activatorReference';
 
 let privateScope:WeakMap<BuildInActivator, {
     kernel: Kernel

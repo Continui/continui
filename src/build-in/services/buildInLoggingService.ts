@@ -1,5 +1,5 @@
-import { LoggingService } from "./loggingService";
-import { TextSecureService } from "./textSecureService";
+import { LoggingService } from "../../services/loggingService";
+import { TextSecureService } from "../../services/textSecureService";
 
 let privateScope: WeakMap<BuildInLoggingService, {
     textSecureService: TextSecureService

@@ -1,5 +1,5 @@
 import { Activator } from './activator';
-import { BuildInActivator } from './buildInActivator';
+import { BuildInActivator } from './build-in/buildInActivator';
 import { StepActivationDefinition } from './stepActivationDefinition';
 import { ActivatorReference } from './activatorReference';
 

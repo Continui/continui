@@ -1,5 +1,5 @@
-import { CliStepOptionParsingService } from "./cliStepOptionParsingService";
-import { IdentifiedStepOptionMaps } from "../types";
+import { CliStepOptionParsingService } from "../../services/cliStepOptionParsingService";
+import { IdentifiedStepOptionMaps } from "../../types";
 
 import * as minimist from 'minimist'
 

@@ -1,6 +1,6 @@
-import { Step } from "../step";
-import { StepOption } from "../stepOption";
-import { HelpGenerationService } from './helpGenerationService'
+import { Step } from "../../step";
+import { StepOption } from "../../stepOption";
+import { HelpGenerationService } from '../../services/helpGenerationService'
 
 /**
  * Represents a service that generate help.

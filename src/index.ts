@@ -1,12 +1,10 @@
 import { Continui } from './continui';
 import { ActivationCenter } from './activationCenter';
-
-import { GitHubReleaseStep } from './build-in-steps/github-release/gitHubReleaseStep';
-import { BuildInTextTemplateService } from './services/buildInTextTemplateService';
-import { BuildInCliStepOptionParsingService } from './services/buildInCliStepOptionParsingService';
-import { BuildInLoggingService } from './services/buildInLoggingService';
-import { BuildInTextSecureService } from './services/buidInTextSecureService';
-import { BuildInHelpGenerationService } from './services/buildInHelpGenerationService'
+import { BuildInLoggingService } from './build-in/services/buildInLoggingService';
+import { BuildInTextTemplateService } from './build-in/services/buildInTextTemplateService';
+import { BuildInCliStepOptionParsingService } from './build-in/services/buildInCliStepOptionParsingService';
+import { BuildInHelpGenerationService } from './build-in/services/buildInHelpGenerationService';
+import { BuildInTextSecureService } from './build-in/services/buidInTextSecureService';
 
 let activationCenter: ActivationCenter = new ActivationCenter()
 
@@ -25,10 +23,6 @@ export { activationCenter as activationCenter }
 
 
 activationCenter.addActivatorReferences({
-        alias: 'step', 
-        target: GitHubReleaseStep
-    },
-    {
         alias: 'loggingService', 
         target:  BuildInLoggingService
     },
