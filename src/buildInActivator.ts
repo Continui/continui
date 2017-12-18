@@ -23,10 +23,21 @@ export class BuildInActivator implements Activator {
      * @returns The activator instance to fluently register dependencies.
      */
     public registerReference(reference: ActivatorReference) : Activator {
-        let bind =  privateScope.get(this).kernel.bind(reference.alias).to(reference.target)
+        let kernel: Kernel = privateScope.get(this).kernel;
+        let bind =  kernel.bind(reference.alias)
+        
+        if (reference.context) {
+            if (!kernel.hasContainer(reference.context)) {
+                kernel.createContainer(reference.context, ['default'])
+            }
+
+            bind.inside(reference.context)
+        }
+        
+        let bindBehavior = bind.to(reference.target)
         
         if (reference.perResolution) {
-            bind.inPerResolutionMode()
+            bindBehavior.inPerResolutionMode()
         }
 
         return this;
@@ -34,11 +45,21 @@ export class BuildInActivator implements Activator {
     
     /**
      * Resolve the dependency with the provided alias.
-     * @param alias Represents the dependency alias.
-     * @returns The activator instance to fluently register dependencies.
+     * @param aliasOrTarget Represents the dependency to be resolved.
+     * @returns A resolved dependency.
      */
-    public resolveReference<DependencyType>(aliasOrTarget: any) : DependencyType {
+    public resolve<DependencyType>(aliasOrTarget: any) : DependencyType {
         return <DependencyType>privateScope.get(this).kernel.resolve(aliasOrTarget)
+    }
+
+    /**
+     * Resolve the dependency with the provided alias, if is registered with the provided context.
+     * @param aliasOrTarget Represents the dependency to be resolved.
+     * @param context Represents the where the resolution will occurs.
+     * @returns A resolved dependency.
+     */
+    public resolveWithContext<DependencyType>(aliasOrTarget: any, context: string) {
+        return <DependencyType>privateScope.get(this).kernel.usingContainer(context).resolve(aliasOrTarget)
     }
 
     /**
@@ -46,7 +67,7 @@ export class BuildInActivator implements Activator {
      * @param alias Represents the alias to look for.
      * @returns A boolean value.
      */
-    public hasReference(alias: string): boolean {
+    public hasAlias(alias: string): boolean {
         return privateScope.get(this).kernel.canResolve(alias)
     }
 }

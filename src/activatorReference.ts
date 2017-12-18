@@ -3,17 +3,22 @@
  */
 export interface ActivatorReference {
     /**
-     * Represents the dependency alias.
+     * Get or set the dependency alias.
      */
     alias: string
 
     /**
-     * Represents the dependency.
+     * Get or set the dependency.
      */
     target: any
 
     /**
-     * Represents a boolean value specifying if the target will be delivered once per rsolution.
+     * Get or set a boolean value specifying if the target will be delivered once per rsolution.
      */
-    perResolution: boolean 
+    perResolution?: boolean
+
+    /**
+     * Get or set the context of the reference, if provided the dependency only will be available if is requested in the provided context.
+     */
+    context?: string
 }

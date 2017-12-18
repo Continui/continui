@@ -1,5 +1,5 @@
 import { Continui } from './continui';
-
+import { ActivationCenter } from './activationCenter';
 
 import { GitHubReleaseStep } from './build-in-steps/github-release/gitHubReleaseStep';
 import { BuildInTextTemplateService } from './services/buildInTextTemplateService';
@@ -8,22 +8,44 @@ import { BuildInLoggingService } from './services/buildInLoggingService';
 import { BuildInTextSecureService } from './services/buidInTextSecureService';
 import { BuildInHelpGenerationService } from './services/buildInHelpGenerationService'
 
-let defaultActivator: Activator = new BuildInActivator()
-let currentActivator: Activator = defaultActivator
+let activationCenter: ActivationCenter = new ActivationCenter()
 
 /**
  * Returns a new continui application ready to be executed.
  * @returns A new continui application.
  */
 export function createContinuiApplication(): Continui {
-    return gerCurrentActivator().resolve(Continui);
+    return activationCenter.currentActivator.resolve(Continui);
 }
 
+/**
+ * Represents an activation center that allows facilitate the dependency managment.
+ */
+export { activationCenter as activationCenter }
 
 
-gerCurrentActivator().register('step', GitHubReleaseStep) 
-                     .register('loggingService', BuildInLoggingService)
-                     .register('textTemplateService', BuildInTextTemplateService)
-                     .register('cliStepOptionParsingService', BuildInCliStepOptionParsingService)
-                     .register('helpGenerationService', BuildInHelpGenerationService)
-                     .register('textSecureService', BuildInTextSecureService, true)
+activationCenter.addActivatorReferences({
+        alias: 'step', 
+        target: GitHubReleaseStep
+    },
+    {
+        alias: 'loggingService', 
+        target:  BuildInLoggingService
+    },
+    {
+        alias: 'textTemplateService', 
+        target:  BuildInTextTemplateService
+    },
+    {
+        alias: 'cliStepOptionParsingService', 
+        target:  BuildInCliStepOptionParsingService
+    },
+    {
+        alias: 'helpGenerationService', 
+        target:  BuildInHelpGenerationService
+    },
+    {
+        alias: 'textSecureService', 
+        target:  BuildInTextSecureService, 
+        perResolution:  true
+    })

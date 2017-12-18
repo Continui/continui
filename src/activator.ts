@@ -13,15 +13,23 @@ export interface Activator {
 
     /**
      * Resolve the dependency with the provided alias.
-     * @param alias Represents the dependency alias.
-     * @returns The activator instance to fluently register dependencies.
+     * @param aliasOrTarget Represents the dependency to be resolved.
+     * @returns A resolved dependency.
      */
-    resolveReference<DependencyType>(aliasOrTarget: any) : DependencyType;
+    resolve<DependencyType>(aliasOrTarget: any) : DependencyType
+
+    /**
+     * Resolve the dependency with the provided alias, if is registered with the provided context.
+     * @param aliasOrTarget Represents the dependency to be resolved.
+     * @param context Represents the where the resolution will occurs.
+     * @returns A resolved dependency.
+     */
+    resolveWithContext<DependencyType>(aliasOrTarget: any, context: string)
 
     /**
      * Returns a boolean value specifying if the activation has a dependency registered with the provided alias.
      * @param alias Represents the alias to look for.
      * @returns A boolean value.
      */
-    hasReference(alias: string): boolean;
+    hasAlias(alias: string): boolean
 }
