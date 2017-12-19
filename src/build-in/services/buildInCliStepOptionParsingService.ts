@@ -1,7 +1,7 @@
 import { CliStepOptionParsingService } from "../../services/cliStepOptionParsingService";
 import { IdentifiedStepOptionMaps } from "../../types";
 
-import * as minimist from 'minimist'
+import minimist from 'minimist'
 
 /**
  * Represens a parser that parse from cli arguments to identified step options map. 
