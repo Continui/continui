@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "An library to easily implement the continuous integration and delivery/deploy.",
   "main": "dist/continui.js",
-  "types": "dist/src/index.d.ts",
+  "types": "dist/definitions/index.d.ts",
   "files": [
     "dist"
   ],

@@ -1,12 +1,21 @@
 const gulp = require('gulp'),
       rollup = require('rollup'),
-      typescript = require('rollup-plugin-typescript2')
+      rollupTypescript = require('rollup-plugin-typescript2')
 
 gulp.task('bundle', function () {
     return rollup.rollup({
         input: './src/index.ts',
         plugins: [
-            typescript()
+            rollupTypescript({                
+                useTsconfigDeclarationDir: true,
+                tsconfigOverride: { 
+                    compilerOptions: {
+                        declaration: true,
+                        declarationDir: './dist/definitions'
+                    },
+                    include: ['./src/**/*.ts']                  
+                }                
+            })
         ],
         external: [
             'fs',
@@ -15,12 +24,11 @@ gulp.task('bundle', function () {
             'axios',
             'minimist',
             '@jems/di'
-        ]
+        ]        
     }).then(bundle => {
         return bundle.write({
             file: './dist/continui.js',
-            format: 'cjs',
-            sourcemap: true
+            format: 'cjs'
         })
     })
 })
