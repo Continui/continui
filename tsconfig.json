@@ -6,7 +6,8 @@
         "target": "es5",
         "module": "commonjs",
         "sourceMap": true,
-        "outDir": "bin/"
+        "outDir": "bin/",
+        "declaration": true
     },
     "include": [
         "src/**/*",

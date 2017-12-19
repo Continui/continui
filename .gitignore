@@ -32,6 +32,7 @@ bower_components
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 build/Release
 bin/
+dist/
 
 # Dependency directories
 node_modules/
@@ -45,6 +46,9 @@ typings/
 
 # Optional eslint cache
 .eslintcache
+
+# Optional rollup cache
+.rpt2_cache
 
 # Optional REPL history
 .node_repl_history

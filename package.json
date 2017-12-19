@@ -2,7 +2,14 @@
   "name": "continui",
   "version": "0.0.1",
   "description": "An library to easily implement the continuous integration and delivery/deploy.",
-  "main": "dist/index.js",
+  "main": "dist/continui.js",
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "gulp test"
   },
@@ -40,6 +47,8 @@
     "gulp-tslint": "^8.1.2",
     "gulp-typescript": "^3.2.3",
     "gulp-zip": "^4.0.0",
+    "rollup": "^0.50.0",
+    "rollup-plugin-typescript2": "^0.9.0",
     "typemoq": "^2.1.0",
     "typescript": "^2.6.2"
   }
