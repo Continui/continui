@@ -1,12 +1,12 @@
 import { Step } from './step';
 import { StepOption } from './stepOption';
 import { StepOptionValueMap, IdentifiedStepOptionMaps } from './types';
-import { CliStepOptionParsingService } from './services/cliStepOptionParsingService';
 import { LoggingService } from './services/loggingService';
 import { error } from 'util';
 import { TextSecureService } from './services/textSecureService';
 import { fail } from 'assert';
 import { HelpGenerationService } from './services/helpGenerationService';
+import { CliArgumentsParsingService } from './services/cliArgumentsParsingService';
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -14,13 +14,14 @@ import * as stepOptionType from './stepOptionType';
 
 import co from 'co';
 
+
 const privateScope: WeakMap<Continui, {
   steps: Step<any>[]
   isCliMode: boolean
   textSecureService: TextSecureService
   loggingService: LoggingService
   helpGenerationService: HelpGenerationService,
-  cliStepOptionParsingService: CliStepOptionParsingService
+  cliArgumentsParsingService: CliArgumentsParsingService
   defaultIdentifiedStepOptionMaps: IdentifiedStepOptionMaps
   combinedIdentifiedStepOptionMaps: IdentifiedStepOptionMaps,
 }> = new WeakMap();
@@ -28,7 +29,7 @@ const privateScope: WeakMap<Continui, {
 export class Continui {
 
   constructor(stepList: Step<any>[],
-              cliStepOptionParsingService: CliStepOptionParsingService,
+              cliArgumentsParsingService: CliArgumentsParsingService,
               textSecureService: TextSecureService,
               loggingService: LoggingService,
               helpGenerationService: HelpGenerationService) {
@@ -36,7 +37,7 @@ export class Continui {
       textSecureService,
       loggingService,
       helpGenerationService,
-      cliStepOptionParsingService, 
+      cliArgumentsParsingService, 
       steps: [],
       isCliMode: false,           
       defaultIdentifiedStepOptionMaps: {},
@@ -68,8 +69,7 @@ export class Continui {
     scope.isCliMode = true;
     scope.loggingService.log('Executing continui in CLI mode');
 
-    this.execute(scope.cliStepOptionParsingService
-                      .parse(cliArguments, scope.steps.map(step => step.identifier)));
+    this.execute(scope.cliArgumentsParsingService.parse(cliArguments));
   }
 
   public execute(identifiedStepOptionMaps: IdentifiedStepOptionMaps): void {
@@ -358,7 +358,7 @@ export class Continui {
                             'is required.');
           }
         });   
-      }    
+      }
             
       if (stepErrors.length) {
         stepErrorsMaps.push({ step, errors: stepErrors });

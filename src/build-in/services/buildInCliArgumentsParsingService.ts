@@ -1,19 +1,18 @@
-import { CliStepOptionParsingService } from '../../services/cliStepOptionParsingService';
+import { CliArgumentsParsingService } from '../../services/cliArgumentsParsingService';
 import { IdentifiedStepOptionMaps } from '../../types';
 
-import minimist from 'minimist';
+import * as minimist from 'minimist';
 
 /**
  * Represens a parser that parse from cli arguments to identified step options map. 
  */
-export class BuildInCliStepOptionParsingService implements CliStepOptionParsingService {
+export class BuildInCliArgumentsParsingService implements CliArgumentsParsingService {
     /**
      * Parse cli arguments into identified step option map.
      * @param cliArguments Represents the cli arguments.
-     * @param stepIdentifiers Represens the steps identifiers.
      * @returns An identified step option map.
      */
-  public parse(cliArguments: any[], stepIdentifiers: string[]) : IdentifiedStepOptionMaps {
+  public parse(cliArguments: any[]) : IdentifiedStepOptionMaps {
     const minimistParsedArguments = minimist(cliArguments.slice(2));
     const identifiedStepOptionMap: IdentifiedStepOptionMaps = {};
 
@@ -24,7 +23,7 @@ export class BuildInCliStepOptionParsingService implements CliStepOptionParsingS
       needsSteps: !!(minimistParsedArguments.s || minimistParsedArguments.steps),
     };
 
-    stepIdentifiers.forEach((stepIdentifier) => {
+    minimistParsedArguments._.forEach((stepIdentifier) => {
       const stepOptions = minimistParsedArguments[stepIdentifier];
             
       if (stepOptions) {

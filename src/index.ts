@@ -2,8 +2,8 @@ import { Continui } from './continui';
 import { ActivationCenter } from './activationCenter';
 import { BuildInLoggingService } from './build-in/services/buildInLoggingService';
 import { BuildInTextTemplateService } from './build-in/services/buildInTextTemplateService';
-import { BuildInCliStepOptionParsingService } from 
-  './build-in/services/buildInCliStepOptionParsingService';
+import { BuildInCliArgumentsParsingService } from 
+  './build-in/services/buildInCliArgumentsParsingService';
 import { BuildInHelpGenerationService } from './build-in/services/buildInHelpGenerationService';
 import { BuildInTextSecureService } from './build-in/services/buidInTextSecureService';
 
@@ -33,8 +33,8 @@ activationCenter.addActivatorReferences(...[{
   target:  BuildInTextTemplateService,
 },
 {
-  alias: 'cliStepOptionParsingService',
-  target:  BuildInCliStepOptionParsingService,
+  alias: 'cliArgumentsParsingService',
+  target:  BuildInCliArgumentsParsingService,
 },
 {
   alias: 'helpGenerationService',
