@@ -34,9 +34,8 @@
   "homepage": "https://github.com/franciscomerdot/continui#readme",
   "dependencies": {
     "@jems/di": "^0.9.4",
-    "axios": "^0.17.1",
     "co": "^4.6.0",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.0"    
   },
   "devDependencies": {
     "@types/mocha": "^2.2.44",
