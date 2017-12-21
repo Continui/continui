@@ -1,8 +1,11 @@
 const clean = require('gulp-clean')
 const ts = require('gulp-typescript')
 const sourcemaps = require('gulp-sourcemaps')
+const path = require('path')
 
-module.exports = function configureGulp(gulp) {
+const nodeModulesPath = path.resolve('./node_modules')
+
+module.exports = function configureGulp(gulp) {  
   gulp.task('clean', function () {
     return gulp.src(['./bin', './dist'])
       .pipe(clean());
@@ -14,9 +17,15 @@ module.exports = function configureGulp(gulp) {
     return tsProject.src()
       .pipe(sourcemaps.init({ loadMaps: true }))
       .pipe(tsProject())
-      .on('error', error => errors.push(error))
+      .on('error', error => {
+        if (error.fullFilename && !path.resolve(error.fullFilename).indexOf(nodeModulesPath) == 0) {
+          errors.push(error)
+        }
+      })
       .on("finish", () => {
-        //throw errors.join('\n')
+        if (errors.length) {
+          throw errors.join('\n')
+        }
       })
       .pipe(sourcemaps.write('./'))
       .pipe(gulp.dest('./bin'))
