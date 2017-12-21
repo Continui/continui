@@ -50,6 +50,8 @@ export class ActivationCenter {
     activationReferences.forEach((activationReference) => {
       privateScope.get(this).activationReferences.push(activationReference);
     });
+
+    this.loadReferencesIntoActivator(this.currentActivator, ...activationReferences);
   }
 
   public addStepActivationDefinitions(
@@ -71,23 +73,27 @@ export class ActivationCenter {
       }
 
       scope.stepActivationDefinitions.push(stepActivationDefinition);
+      this.loadStepActivationDefinitionsIntoActivator(this.currentActivator,
+                                                      stepActivationDefinition);
     });
   }
 
   private setupActivator(activator: Activator): void {
-    this.loadReferencesIntoActivator(activator);
-    this.loadStepActivationDefinitionsIntoActivator(activator);
+    const scope = privateScope.get(this);
+    this.loadReferencesIntoActivator(activator, ...scope.activationReferences);
+    this.loadStepActivationDefinitionsIntoActivator(activator, ...scope.stepActivationDefinitions);
   }
 
-  private loadReferencesIntoActivator(activator: Activator) {
-    privateScope.get(this).activationReferences.forEach((activationReference) => {
+  private loadReferencesIntoActivator(activator: Activator, ...references: ActivatorReference[]) {
+    references.forEach((activationReference) => {
       if (!activator.hasAlias(activationReference.alias)) {
         activator.registerReference(activationReference);
       }
     });
   }
 
-  private loadStepActivationDefinitionsIntoActivator(activator: Activator) {
+  private loadStepActivationDefinitionsIntoActivator(activator: Activator,
+                                                     ...definitions: StepActivationDefinition[]) {
     const scope = privateScope.get(this);
 
     const activatorAndStepActivationDefinitionsMap = scope.activatorAndStepActivationDefinitionsMap
@@ -101,7 +107,7 @@ export class ActivationCenter {
       });
     }
 
-    scope.stepActivationDefinitions.forEach((storedStepActivationDefinition) => {
+    definitions.forEach((storedStepActivationDefinition) => {
 
       const storeStepIdentifier: string = storedStepActivationDefinition.step.identifier;
 
