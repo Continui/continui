@@ -1,34 +1,11 @@
-const gulp = require('gulp'),
-      rollup = require('rollup'),
-      rollupTypescript = require('rollup-plugin-typescript2')
+const gulp = require('gulp')
+const gutil = require('gulp-util') // I'm not using util, but it looks that is, must be required.
 
-gulp.task('bundle', function () {
-    return rollup.rollup({
-        input: './src/index.ts',
-        plugins: [
-            rollupTypescript({                
-                useTsconfigDeclarationDir: true,
-                tsconfigOverride: { 
-                    compilerOptions: {
-                        declaration: true,
-                        declarationDir: './dist/definitions'
-                    },
-                    include: ['./src/**/*.ts']                  
-                }                
-            })
-        ],
-        external: [
-            'fs',
-            'path',
-            'co',
-            'axios',
-            'minimist',
-            '@jems/di'
-        ]        
-    }).then(bundle => {
-        return bundle.write({
-            file: './dist/continui.js',
-            format: 'cjs'
-        })
-    })
-})
+require('./build/tasks/transpile.task')(gulp)
+require('./build/tasks/test.task')(gulp)
+require('./build/tasks/lint.task')(gulp)
+require('./build/tasks/integrate.task')(gulp)
+require('./build/tasks/distribute.task')(gulp)
+require('./build/tasks/pack.task')(gulp)
+// require('./build/tasks/release.task')(gulp)
+// require('./build/tasks/deploy.task')(gulp)
