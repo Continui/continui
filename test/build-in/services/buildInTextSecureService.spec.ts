@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { BuildInTextSecureService } from '../../src/build-in/services/buidInTextSecureService';
+import { BuildInTextSecureService } from '../../../src/build-in/services/buidInTextSecureService';
 
 describe('The Build In Text Secure Service', () => {
   it('Should replace all text registered as sensitive for "[secure]"', () => {
