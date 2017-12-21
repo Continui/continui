@@ -1,4 +1,4 @@
-import { IdentifiedStepOptionMaps } from "../types";
+import { IdentifiedStepOptionMaps } from '../types';
 
 
 /**
@@ -11,5 +11,5 @@ export interface CliStepOptionParsingService {
      * @param stepIdentifiers Represens the steps identifiers.
      * @returns An identified step option map.
      */
-    parse(cliArguments: any[], stepIdentifiers: string[]) : IdentifiedStepOptionMaps;
+  parse(cliArguments: any[], stepIdentifiers: string[]) : IdentifiedStepOptionMaps;
 }

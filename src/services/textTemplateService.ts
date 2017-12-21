@@ -6,5 +6,5 @@ export interface TextTemplateService {
      * Return a transformed text template.
      * @returns A transformed text template.
      */
-    tranform(textTemplate: string): string
+  tranform(textTemplate: string): string;
 }

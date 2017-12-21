@@ -6,5 +6,5 @@ export interface LoggingService {
      * Logs data.
      * @param data Represents the data that will be logged.
      */
-    log(...data: string[]): void;
+  log(...data: string[]): void;
 }
