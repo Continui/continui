@@ -1,7 +1,9 @@
 const rollup = require('rollup'),
-      rollupTypescript = require('rollup-plugin-typescript2')
+      rollupTypescript = require('rollup-plugin-typescript2'),
+      os = require('os')
 
 const rollupTypescriptOptions = {
+    cacheRoot: os.tmpdir(),
     useTsconfigDeclarationDir: true,
     tsconfigOverride: {
         compilerOptions: {
