@@ -19,7 +19,6 @@
   },
   "keywords": [
     "continuous",
-    "integration",
     "delivery",
     "deploy",
     "git",
@@ -35,21 +34,19 @@
   "dependencies": {
     "@jems/di": "^0.9.4",
     "co": "^4.6.0",
-    "minimist": "^1.2.0"    
+    "deepmerge": "^2.0.1",
+    "minimist": "^1.2.0"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.44",
     "@types/node": "^8.0.53",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
-    "gulp-merge": "^0.1.1",
     "gulp-mocha": "^4.3.1",
     "gulp-sourcemaps": "^2.6.1",
     "gulp-tslint": "^8.1.2",
     "gulp-typescript": "^3.2.3",
     "gulp-zip": "^4.0.0",
-    "install": "^0.10.2",
-    "npm": "^5.6.0",
     "rollup": "^0.50.0",
     "rollup-plugin-typescript2": "^0.9.0",
     "tslint": "^5.8.0",

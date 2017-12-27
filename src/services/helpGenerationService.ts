@@ -1,5 +1,4 @@
-import { Step } from '../step';
-import { StepOption } from '../stepOption';
+import { Step,  StepOption } from 'continui-step';
 
 /**
  * Represents a service that generate help.

@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import { CliArgumentsParsingService } from '../../../src/services/cliArgumentsParsingService';
 import { BuildInCliArgumentsParsingService } from 
     '../../../src/build-in/services/buildInCliArgumentsParsingService';
-import { IdentifiedStepOptionMaps } from '../../../src/types';
+import { IdentifiedStepOptionMaps } from 'continui-step';
 
 describe('The Build In Cli Arguments Parsing Service', () => {
   it('Should parse and argument array into a identified step option map', () => {

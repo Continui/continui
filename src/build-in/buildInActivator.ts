@@ -1,6 +1,6 @@
 import { Activator } from '../activator';
 import { createKernel, Kernel } from '@jems/di';
-import { ActivatorReference } from '../activatorReference';
+import { StepActivationReference } from 'continui-step';
 
 const privateScope:WeakMap<BuildInActivator, {
   kernel: Kernel,
@@ -22,7 +22,7 @@ export class BuildInActivator implements Activator {
      * @param reference Represents the reference that will be registered.
      * @returns The activator instance to fluently register dependencies.
      */
-  public registerReference(reference: ActivatorReference) : Activator {
+  public registerReference(reference: StepActivationReference) : Activator {
     const kernel: Kernel = privateScope.get(this).kernel;
     const bind =  kernel.bind(reference.alias);
         
@@ -35,7 +35,11 @@ export class BuildInActivator implements Activator {
     }
         
     const bindBehavior = bind.to(reference.target);
-        
+    
+    if (reference.asConstant) {
+      bindBehavior.asConstant();
+    }
+
     if (reference.perResolution) {
       bindBehavior.inPerResolutionMode();
     }

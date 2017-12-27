@@ -1,22 +1,27 @@
-import { Step } from './step';
-import { StepOption } from './stepOption';
-import { StepOptionValueMap, IdentifiedStepOptionMaps } from './types';
+import { Step,
+         StepOption,
+         StepOptionTypes,
+         StepOptionValueMap,
+         IdentifiedStepOptionMaps } from 'continui-step';
 import { LoggingService } from './services/loggingService';
 import { error } from 'util';
 import { TextSecureService } from './services/textSecureService';
 import { fail } from 'assert';
 import { HelpGenerationService } from './services/helpGenerationService';
 import { CliArgumentsParsingService } from './services/cliArgumentsParsingService';
+import { StepFactory } from './stepFactory';
+import { ActivationCenter } from './activationCenter';
 
 import * as fs from 'fs';
 import * as path from 'path';
-import * as stepOptionType from './stepOptionType';
+import * as deepmerge from 'deepmerge';
 
 import co from 'co';
 
-
 const privateScope: WeakMap<Continui, {
   steps: Step<any>[]
+  activationCenter: ActivationCenter,
+  stepFactory: StepFactory,
   isCliMode: boolean
   textSecureService: TextSecureService
   loggingService: LoggingService
@@ -28,12 +33,17 @@ const privateScope: WeakMap<Continui, {
 
 export class Continui {
 
-  constructor(stepList: Step<any>[],
-              cliArgumentsParsingService: CliArgumentsParsingService,
-              textSecureService: TextSecureService,
-              loggingService: LoggingService,
-              helpGenerationService: HelpGenerationService) {
-    privateScope.set(this, {           
+  constructor(
+    activationCenter: ActivationCenter,
+    stepFactory: StepFactory,
+    cliArgumentsParsingService: CliArgumentsParsingService,
+    textSecureService: TextSecureService,
+    loggingService: LoggingService,
+    helpGenerationService: HelpGenerationService) {
+
+    privateScope.set(this, {
+      activationCenter,
+      stepFactory,         
       textSecureService,
       loggingService,
       helpGenerationService,
@@ -43,8 +53,6 @@ export class Continui {
       defaultIdentifiedStepOptionMaps: {},
       combinedIdentifiedStepOptionMaps: {},     
     });
-
-    this.loadSteps(...stepList);
   }
 
   public loadSteps(...steps: Step<any>[]): void {        
@@ -60,7 +68,7 @@ export class Continui {
         scope.defaultIdentifiedStepOptionMaps[step.identifier][option.key] = option.defaultValue);
 
       scope.steps.push(step);
-    });
+    });    
   }
 
   public executeInCliMode(cliArguments: any[]): void {
@@ -75,27 +83,35 @@ export class Continui {
   public execute(identifiedStepOptionMaps: IdentifiedStepOptionMaps): void {
     co(function* () {
       const scope = privateScope.get(this);
+      const mainIdentifier: string = 'main';      
 
-      const mainIdentifier: string = 'main';
       scope.combinedIdentifiedStepOptionMaps = 
-        this.getCombinedIdentifiedStepOptionMaps(scope.defaultIdentifiedStepOptionMaps,
-                                                 this.getOptionsFromRootFile(),
-                                                 identifiedStepOptionMaps);
-
-      this.registerSensitiveText();
+        deepmerge.all([this.getOptionsFromRootFile(), identifiedStepOptionMaps]);
 
       const mainStepOptionMap: StepOptionValueMap = 
         scope.combinedIdentifiedStepOptionMaps[mainIdentifier];
+
+      this.registerSensitiveText();
 
       if (!mainStepOptionMap) {
         throw new Error('Main step is missing, it looks that you are not using continui from ' +
                         'CLI, so you must provide the main step parameters.');
       }
             
-      const providedStepsIdentifiers: string[] = mainStepOptionMap.steps || [];            
+      const providedStepsIdentifiers: string[] = mainStepOptionMap.steps || [];    
             
       if (providedStepsIdentifiers.length) {
+        if (mainStepOptionMap.stepModule) {
+          this.loadStepDefinitions(mainStepOptionMap.stepModule);
+        }
+
         this.validateIdentifiersExistence(providedStepsIdentifiers);
+
+        scope.combinedIdentifiedStepOptionMaps = 
+         deepmerge.all([
+           scope.defaultIdentifiedStepOptionMaps,
+           scope.combinedIdentifiedStepOptionMaps,           
+         ]);
       }
 
       if (mainStepOptionMap.needsVersion) {            
@@ -201,34 +217,7 @@ export class Continui {
         }
       });
     });
-  }
-
-  private getCombinedIdentifiedStepOptionMaps(
-    ...identifiedStepOptionMaps: IdentifiedStepOptionMaps[]): IdentifiedStepOptionMaps {
-    if (!identifiedStepOptionMaps.length) {
-      return {};     
-    }
-
-    const toReturnidentifiedStepOptionMap: IdentifiedStepOptionMaps = {};
-    const stepIdentifiers: string[] = [];
-
-    identifiedStepOptionMaps.forEach((identifiedStepOptionMap) => {
-      for (const identifier in identifiedStepOptionMap) {
-        if (identifiedStepOptionMap.hasOwnProperty(identifier) &&
-            stepIdentifiers.indexOf(identifier) < 0) {
-          stepIdentifiers.push(identifier);                     
-        }
-      }
-    });
-
-    stepIdentifiers.forEach((identifier) => {
-      toReturnidentifiedStepOptionMap[identifier] = 
-                Object.assign({}, ...identifiedStepOptionMaps.map(
-                  identifiedStepOptionMap => identifiedStepOptionMap[identifier] || {}));
-    });
-
-    return toReturnidentifiedStepOptionMap;
-  }
+  }  
 
   private displayVersion() {
     const scope = privateScope.get(this);
@@ -255,16 +244,36 @@ export class Continui {
                              '\n' + scope.steps.map(step => `${step.identifier}(${step.name})`));
   }
 
-  private getStep(stepIdentifier: string): Step<any> {
-    const toReturn: Step<any> = privateScope.get(this)
-                                            .steps
-                                            .find(step => step.identifier === stepIdentifier);
-
-    if (toReturn) {
-      return toReturn;
-    } 
+  private loadStepDefinitions(modules: string | string[]) {
     
-    throw new Error(`There is not any step with the identifier ${stepIdentifier}`);
+    let modulesArray: string[];
+
+    if (typeof modules === 'string') {
+      modulesArray = [modules];
+    }
+    
+    if (modules instanceof Array) {
+      modulesArray = modules;
+    }
+
+    modulesArray.forEach((module) => {
+      const moduleResult:any = require(module);
+      privateScope.get(this).activationCenter
+                            .addStepActivationDefinitions(moduleResult['default'] || moduleResult);
+    });
+  }
+
+  private getStep(stepIdentifier: string): Step<any> {
+    const scope = privateScope.get(this);
+
+    let toReturn: Step<any> = scope.steps.find(step => step.identifier === stepIdentifier);
+
+    if (!toReturn) {
+      toReturn = scope.stepFactory.createStep(stepIdentifier);
+      this.loadSteps(toReturn);
+    }
+    
+    return toReturn;
   }    
 
   private* restoreExecutedStep(executedStepContextMaps: { 
@@ -277,8 +286,6 @@ export class Continui {
     for (let i = executedStepContextMaps.length - 1; i >= 0; i = i - 1) {
       const executedStepContextMap = executedStepContextMaps[i];
       const step = executedStepContextMap.step;
-
-
 
       try {
         scope.loggingService.log(`Restoring step ${step.identifier}(${step.name})`);
@@ -295,18 +302,18 @@ export class Continui {
     return [
       {
         key: 'help',
-        type: stepOptionType.boolean,
+        type: StepOptionTypes.boolean,
         description: '(-h) Make the tool display the help, if steps are provided, the steps ' +
                      'help will be displayed.',
       },
       {
         key: 'version',
-        type: stepOptionType.boolean,
+        type: StepOptionTypes.boolean,
         description: '(-v) Make the tool display the version.',
       },
       {
         key: 'steps',
-        type: stepOptionType.boolean,
+        type: StepOptionTypes.boolean,
         description: '(-s) Make the tool display the available steps.',
       },
     ];
@@ -316,7 +323,7 @@ export class Continui {
     const scope = privateScope.get(this);
     const generalErrors: string[] = [];      
 
-    scope.loggingService.log('Validating steps idntifiers existence');
+    scope.loggingService.log('Validating steps identifiers existence');
 
     stepIdentifiers.forEach((stepIdentifier) => {
       try {

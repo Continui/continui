@@ -6,6 +6,7 @@ import { BuildInCliArgumentsParsingService } from
   './build-in/services/buildInCliArgumentsParsingService';
 import { BuildInHelpGenerationService } from './build-in/services/buildInHelpGenerationService';
 import { BuildInTextSecureService } from './build-in/services/buidInTextSecureService';
+import { StepFactory } from './stepFactory';
 
 const activationCenter: ActivationCenter = new ActivationCenter();
 
@@ -22,25 +23,28 @@ export function createContinuiApplication(): Continui {
  */
 export { activationCenter as activationCenter };
 
-
+export * from './activator';
 
 activationCenter.addActivatorReferences(...[{
+  alias: 'activationCenter', 
+  target:  activationCenter,
+  asConstant: true,
+},{
   alias: 'loggingService', 
   target:  BuildInLoggingService,
-},
-{
+}, {
   alias: 'textTemplateService',
   target:  BuildInTextTemplateService,
-},
-{
+},{
   alias: 'cliArgumentsParsingService',
   target:  BuildInCliArgumentsParsingService,
-},
-{
+},{
   alias: 'helpGenerationService',
   target:  BuildInHelpGenerationService,
-},
-{
+},{
+  alias: 'stepFactory',
+  target: StepFactory,
+},{
   alias: 'textSecureService',
   target:  BuildInTextSecureService, 
   perResolution:  true,

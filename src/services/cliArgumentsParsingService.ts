@@ -1,4 +1,4 @@
-import { IdentifiedStepOptionMaps } from '../types';
+import { IdentifiedStepOptionMaps } from 'continui-step';
 
 
 /**

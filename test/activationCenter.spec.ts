@@ -2,8 +2,7 @@ import * as assert from 'assert';
 import { IMock, Mock, It, Times } from 'typemoq';
 import { Activator } from '../src/activator';
 import { ActivationCenter } from '../src/activationCenter';
-import { Step } from '../src/step';
-import { ActivatorReference } from '../src/activatorReference';
+import { Step, StepActivationReference } from 'continui-step';
 
 describe('The Activation Center', () => {
 
@@ -34,6 +33,7 @@ describe('The Activation Center', () => {
 
        assert.throws(() => {
          activationCenter.addStepActivationDefinitions({
+           identifier: 'test',
            step: null,
            activationReferences: [],
          });
@@ -42,19 +42,17 @@ describe('The Activation Center', () => {
 
   it('Should throw and error when exist repetitive step activation definition step identifiers',
      () => {
-       const mainStepMock: IMock<Step<any>> = Mock.ofType<Step<any>>();
-       mainStepMock.setup(step => step.identifier).returns(() => 'same-identifier');
-
        const activationCenter: ActivationCenter = new ActivationCenter();
-        
 
        assert.throws(() => {
          activationCenter.addStepActivationDefinitions(...[{
-           step: mainStepMock.object,
+           identifier: 'test',
+           step () {},
            activationReferences: [],
          },
          {
-           step: mainStepMock.object,
+           identifier: 'test',
+           step () {},
            activationReferences: [],
          }]);
        });
@@ -64,19 +62,19 @@ describe('The Activation Center', () => {
      'been provided.',
      () => {
        const activatorMock: IMock<Activator> = Mock.ofType<Activator>();
-       const stepMock: IMock<Step<any>> = Mock.ofType<Step<any>>();
        const activationCenter: ActivationCenter = new ActivationCenter();
-       const activatorReference: ActivatorReference = { alias: 'reference 1', target: {} };
+       const activatorReference: StepActivationReference = { alias: 'reference 1', target: {} };
 
        activationCenter.useActivator(activatorMock.object);
        activationCenter.addActivatorReferences(activatorReference); // 1
        activationCenter.addActivatorReferences(activatorReference); // 2
 
        activationCenter.addStepActivationDefinitions({
-         step: stepMock.object,// 3 A reference is created for the step
+         identifier: 'test',
+         step() {},// 3 A reference is created for the step
          activationReferences: [
-           activatorReference,// 4
-           activatorReference,// 5
+           activatorReference, // 4
+           activatorReference, // 5
            activatorReference, // 6
          ],
        });

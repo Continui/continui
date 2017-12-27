@@ -1,7 +1,7 @@
 import { CliArgumentsParsingService } from '../../services/cliArgumentsParsingService';
-import { IdentifiedStepOptionMaps } from '../../types';
+import { IdentifiedStepOptionMaps } from 'continui-step';
 
-import * as minimist from 'minimist';
+const minimist = require('minimist');
 
 /**
  * Represens a parser that parse from cli arguments to identified step options map. 
@@ -21,6 +21,7 @@ export class BuildInCliArgumentsParsingService implements CliArgumentsParsingSer
       needsVersion: !!(minimistParsedArguments.v || minimistParsedArguments.version),
       needsHelp: !!(minimistParsedArguments.h || minimistParsedArguments.help),
       needsSteps: !!(minimistParsedArguments.s || minimistParsedArguments.steps),
+      stepModule: minimistParsedArguments.stepModule,
     };
 
     minimistParsedArguments._.forEach((stepIdentifier) => {
