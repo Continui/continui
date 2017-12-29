@@ -1,6 +1,9 @@
 import { Activator } from '../activator';
 import { createKernel, Kernel } from '@jems/di';
-import { StepActivationReference } from 'continui-step';
+import { StepActivationReference,
+         StepActivationReferenceMode,
+         StepActivationReferenceType, 
+} from 'continui-step';
 
 const privateScope:WeakMap<BuildInActivator, {
   kernel: Kernel,
@@ -35,13 +38,32 @@ export class BuildInActivator implements Activator {
     }
         
     const bindBehavior = bind.to(reference.target);
-    
-    if (reference.asConstant) {
-      bindBehavior.asConstant();
-    }
 
-    if (reference.perResolution) {
-      bindBehavior.inPerResolutionMode();
+
+    switch (reference.type) {      
+      case StepActivationReferenceType.constant:
+        bindBehavior.asConstant();
+        break;
+      case StepActivationReferenceType.executableFunction:
+        bindBehavior.asBuilderFunction();
+        break;
+      case StepActivationReferenceType.instance:
+      default:
+        bindBehavior.asInstance();
+        break;
+    }
+    
+    switch (reference.mode) {      
+      case StepActivationReferenceMode.perResolution:
+        bindBehavior.inPerResolutionMode();
+        break;
+      case StepActivationReferenceMode.singelton:
+        bindBehavior.inSingletonMode();
+        break;
+      case StepActivationReferenceMode.each:
+      default:
+        bindBehavior.inPerCallMode();
+        break;
     }
 
     return this;

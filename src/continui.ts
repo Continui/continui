@@ -3,9 +3,8 @@ import { Step,
          StepOptionTypes,
          StepOptionValueMap,
          IdentifiedStepOptionMaps } from 'continui-step';
-import { LoggingService } from './services/loggingService';
+import { LoggingService, TextSecureService } from 'continui-services';
 import { error } from 'util';
-import { TextSecureService } from './services/textSecureService';
 import { fail } from 'assert';
 import { HelpGenerationService } from './services/helpGenerationService';
 import { CliArgumentsParsingService } from './services/cliArgumentsParsingService';

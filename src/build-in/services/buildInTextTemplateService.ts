@@ -1,15 +1,15 @@
-import { TextTemplateService } from '../../services/textTemplateService';
+import { TextTemplateService } from 'continui-services';
 
 /**
- * Represents a template service for text that can tranform text using placeholders.
+ * Represents a template service for text that can parse text using placeholders.
  */
 export class BuildInTextTemplateService implements TextTemplateService {
 
     /**
-     * Return a transformed text template.
-     * @returns A transformed text template.
+     * Return a parsed text template.
+     * @returns A parsed text template.
      */
-  public tranform(textTemplate: string): string {
-    return textTemplate; // TODO: Transform the text.
+  public parse(textTemplate: string): string {
+    return textTemplate; // TODO: parse the text.
   }
 }

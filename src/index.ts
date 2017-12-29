@@ -5,7 +5,7 @@ import { BuildInTextTemplateService } from './build-in/services/buildInTextTempl
 import { BuildInCliArgumentsParsingService } from 
   './build-in/services/buildInCliArgumentsParsingService';
 import { BuildInHelpGenerationService } from './build-in/services/buildInHelpGenerationService';
-import { BuildInTextSecureService } from './build-in/services/buidInTextSecureService';
+import { BuildInTextSecureService } from './build-in/services/buildInTextSecureService';
 import { StepFactory } from './stepFactory';
 
 const activationCenter: ActivationCenter = new ActivationCenter();
@@ -28,7 +28,6 @@ export * from './activator';
 activationCenter.addActivatorReferences(...[{
   alias: 'activationCenter', 
   target:  activationCenter,
-  asConstant: true,
 },{
   alias: 'loggingService', 
   target:  BuildInLoggingService,
@@ -46,6 +45,5 @@ activationCenter.addActivatorReferences(...[{
   target: StepFactory,
 },{
   alias: 'textSecureService',
-  target:  BuildInTextSecureService, 
-  perResolution:  true,
+  target:  BuildInTextSecureService,
 }]);

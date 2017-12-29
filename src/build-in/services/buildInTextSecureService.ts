@@ -1,12 +1,12 @@
 import { error } from 'util';
-import { TextSecureService } from '../../services/textSecureService';
+import { TextSecureService } from 'continui-services';
 
 const privateScope: WeakMap<BuildInTextSecureService, {
   sensitiveText: string[],
 }> = new WeakMap();
 
 /**
- * Represents a service for transform text that can contain sensitive information that doesn't want
+ * Represents a service for parse text that can contain sensitive information that doesn't want
  * to be displayed.
  */
 export class BuildInTextSecureService implements TextSecureService {    
@@ -18,7 +18,7 @@ export class BuildInTextSecureService implements TextSecureService {
   }
 
     /**
-     * Register sensitive text to remove those on transformations.
+     * Register sensitive text to remove those on parsings.
      * @param sensitiveText Represents a sensitive text.
      */
   public registerSersitiveText(sensitiveText: string): void {
@@ -28,11 +28,11 @@ export class BuildInTextSecureService implements TextSecureService {
   }
 
     /**
-     * Return a secure transformed text.
-     * @param insecureText Represents a insecure text that want to be transformed into a secur one.
-     * @returns A secure transformed text.
+     * Return a secure parsed text.
+     * @param insecureText Represents a insecure text that want to be parsed into a secure one.
+     * @returns A secure parsed text.
      */
-  public tranform(insecureText: string): string {
+  public parse(insecureText: string): string {
     let securetext = insecureText;
     
     privateScope.get(this).sensitiveText.forEach(sensitiveText => 
