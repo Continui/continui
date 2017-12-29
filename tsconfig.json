@@ -4,5 +4,10 @@
         "target": "es5",
         "module": "commonjs",
         "moduleResolution": "node"
-    }
+    },
+    "exclude": [
+        "bin/**/*",
+        "dist/**/*",
+        "node_modules/**/*"
+    ]
 }

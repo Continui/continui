@@ -220,7 +220,7 @@ export class Continui {
 
   private displayVersion() {
     const scope = privateScope.get(this);
-
+    
     scope.loggingService.log('Version requested');
     scope.loggingService.log('continui version: 1.0.0'); // TODO: Must log the package version.
   }

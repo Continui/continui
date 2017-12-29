@@ -23,7 +23,7 @@ export class StepFactory {
     try {
       return privateScope.get(this)
                             .activationCenter
-                            .currentActivator
+                            .activator
                             .resolveWithContext('step', stepIdentifier);
     } catch (error) {
       throw new Error(`Can not create step with the identifier (${stepIdentifier}) ` +

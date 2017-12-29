@@ -23,7 +23,7 @@ const rollupOptions = {
         'fs',
         'path',
         'co',
-        'axios',
+        'deepmerge',
         'minimist',
         '@jems/di'
     ]

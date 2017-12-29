@@ -1,8 +1,9 @@
 import { Activator } from '../activator';
 import { createKernel, Kernel } from '@jems/di';
-import { StepActivationReference,
-         StepActivationReferenceMode,
-         StepActivationReferenceType, 
+import { 
+  StepActivationReference,
+  StepActivationReferenceMode,
+  StepActivationReferenceType, 
 } from 'continui-step';
 
 const privateScope:WeakMap<BuildInActivator, {
@@ -38,7 +39,6 @@ export class BuildInActivator implements Activator {
     }
         
     const bindBehavior = bind.to(reference.target);
-
 
     switch (reference.type) {      
       case StepActivationReferenceType.constant:

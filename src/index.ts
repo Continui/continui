@@ -1,21 +1,18 @@
 import { Continui } from './continui';
 import { ActivationCenter } from './activationCenter';
-import { BuildInLoggingService } from './build-in/services/buildInLoggingService';
-import { BuildInTextTemplateService } from './build-in/services/buildInTextTemplateService';
-import { BuildInCliArgumentsParsingService } from 
-  './build-in/services/buildInCliArgumentsParsingService';
-import { BuildInHelpGenerationService } from './build-in/services/buildInHelpGenerationService';
-import { BuildInTextSecureService } from './build-in/services/buildInTextSecureService';
-import { StepFactory } from './stepFactory';
+import { BuildInDependenciesRegistrar } from './build-in/buildInDependenciesRegistrar';
 
 const activationCenter: ActivationCenter = new ActivationCenter();
+const buildInActivationRegistrar: BuildInDependenciesRegistrar = new BuildInDependenciesRegistrar();
+
+buildInActivationRegistrar.registerBuilInReferencesIntoActivator(activationCenter.activator);
 
 /**
  * Returns a new continui application ready to be executed.
  * @returns A new continui application.
  */
 export function createContinuiApplication(): Continui {
-  return activationCenter.currentActivator.resolve(Continui);
+  return activationCenter.activator.resolve(Continui);
 }
 
 /**
@@ -24,26 +21,3 @@ export function createContinuiApplication(): Continui {
 export { activationCenter as activationCenter };
 
 export * from './activator';
-
-activationCenter.addActivatorReferences(...[{
-  alias: 'activationCenter', 
-  target:  activationCenter,
-},{
-  alias: 'loggingService', 
-  target:  BuildInLoggingService,
-}, {
-  alias: 'textTemplateService',
-  target:  BuildInTextTemplateService,
-},{
-  alias: 'cliArgumentsParsingService',
-  target:  BuildInCliArgumentsParsingService,
-},{
-  alias: 'helpGenerationService',
-  target:  BuildInHelpGenerationService,
-},{
-  alias: 'stepFactory',
-  target: StepFactory,
-},{
-  alias: 'textSecureService',
-  target:  BuildInTextSecureService,
-}]);
