@@ -9,7 +9,7 @@ export interface LoggingData {
     /**
      * Represents the color in which the text will be displayed.
      */
-  textColor?: string | number[];
+  textColor?: string;
 
     /**
      * Represents the color type given in the text color.
