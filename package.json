@@ -33,6 +33,7 @@
   "homepage": "https://github.com/franciscomerdot/continui#readme",
   "dependencies": {
     "@jems/di": "^0.9.4",
+    "chalk": "^2.3.0",
     "co": "^4.6.0",
     "deepmerge": "^2.0.1",
     "minimist": "^1.2.0"

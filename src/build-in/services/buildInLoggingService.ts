@@ -1,4 +1,10 @@
-import { LoggingService, LoggingData, TextSecureService } from 'continui-services';
+import {
+  LoggingService,
+  LoggingData,
+  TextSecureService,
+  LoggingDataColorTypes
+} from 'continui-services';
+import chalk, { Chalk } from 'chalk'
 
 type Services = {
   textSecureService: TextSecureService,
@@ -8,6 +14,8 @@ const privateScope: WeakMap<BuildInLoggingService, {
   services: Services
   functions: {
     parseLoggingData: (loggingData: LoggingData, indented?: boolean) => string,
+    setupDefaultLoggingDataValues: (loggingData: LoggingData) => void,
+    getConfiguredChalk: (loggingData: LoggingData) => Chalk,   
   },
 }> = new WeakMap();
 
@@ -17,9 +25,16 @@ const privateScope: WeakMap<BuildInLoggingService, {
 export class BuildInLoggingService implements LoggingService {
 
   constructor(textSecureService: TextSecureService) {
-    setupPrivateScope(this, {
+    privateScope.set(this, {
+      services: {
       textSecureService,
-    });
+      },
+      functions: {
+        parseLoggingData: parseLoggingData.bind(this),
+        setupDefaultLoggingDataValues: setupDefaultLoggingDataValues.bind(this),
+        getConfiguredChalk: getConfiguredChalk.bind(this)
+      },
+    })
   }
 
     /**
@@ -58,18 +73,33 @@ export class BuildInLoggingService implements LoggingService {
   }
 }
 
-function setupPrivateScope(instance: BuildInLoggingService, services: Services) {
-  privateScope.set(instance, {
-    services,
-    functions: {
-      parseLoggingData: parseLoggingData.bind(this),
-    },
-  });
+function parseLoggingData(loggingData: LoggingData, indented?: boolean) : string { 
+  const scope = privateScope.get(this);
+  const date: string = new Date().toTimeString().substr(0, 8); 
+
+  scope.functions.setupDefaultLoggingDataValues(loggingData)
+
+  let chalkSetup = scope.functions.getConfiguredChalk(loggingData);
+  let parsedText: string = indented ? '' : `[${chalk.gray(date)}] ${chalkSetup(loggingData.text)}`;
+
+  return parsedText;
 }
 
-function parseLoggingData(loggingData: LoggingData, indented?: boolean) : string { 
-  const date: string = new Date().toTimeString().substr(0, 8);
+function setupDefaultLoggingDataValues(loggingData: LoggingData) {
+  loggingData.textColor = loggingData.textColor || 'black';
+  loggingData.textColorType = loggingData.textColorType || LoggingDataColorTypes.name;
+  loggingData.backColor = loggingData.backColor || 'black';
+  loggingData.backColorType = loggingData.backColorType || LoggingDataColorTypes.name;
+  loggingData.style = loggingData.style || 'reset';
+}
 
-  // typeof toLogData === 'string' ? toLogData : JSON.stringify(toLogData);
-  return (indented ? '  ' : `[${date}]`) + ` ${loggingData.text}`;
+function SetupChalkForText(Chalk,  loggingData: LoggingData) : Chalk {
+
+  let configuredChalk: Chalk = chalk;
+
+  switch(loggingData.textColorType) {
+
+  }
+
+  return configuredChalk;
 }
