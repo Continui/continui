@@ -8,7 +8,7 @@ export interface TextSecureService {
      * Register sensitive text to remove those on parsings.
      * @param sensitiveText Represents a sensitive text.
      */
-  registerSersitiveText(sensitiveText: string): void;
+  registerSensitiveText(sensitiveText: string): void;
 
     /**
      * Return a secure parsed text.
