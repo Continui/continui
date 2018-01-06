@@ -11,6 +11,7 @@ import {
   StepActivationReferenceType,
   StepActivationReferenceMode,
 } from 'continui-step';
+import { BuildInTextTemplateContextProvider } from './services/buildInTextTemplateContextProvider';
 
 const buildInStepReferences: StepActivationReference[] = [{
   alias: 'activationCenter',       
@@ -22,6 +23,10 @@ const buildInStepReferences: StepActivationReference[] = [{
 }, {
   alias: 'textTemplateService',
   target:  BuildInTextTemplateService,
+},{
+  alias: 'textTemplateContextProvider',
+  target: BuildInTextTemplateContextProvider,
+  mode: StepActivationReferenceMode.singelton,
 },{
   alias: 'cliArgumentsParsingService',
   target:  BuildInCliArgumentsParsingService,
