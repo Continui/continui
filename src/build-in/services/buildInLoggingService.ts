@@ -69,7 +69,7 @@ export class BuildInLoggingService implements LoggingService {
   /**
    * Parse the data to apply styles and colors defined in the logging data.
    * @param loggingData Represents the data that will be logged.
-   * @param isConcatenating Represents a boolean value specifying if the reslt text will be concatenated
+   * @param isConcatenating Represents a boolean value specifying if the result text will be concat
    */
   private parseLoggingData(loggingData: LoggingData, isConcatenating?: boolean): string {
     const scope = privateScope.get(this);
