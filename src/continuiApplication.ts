@@ -21,11 +21,9 @@ const privateScope: WeakMap<ContinuiApplication, {
   steps: Step<any>[]
   activationCenter: ActivationCenter,
   stepFactory: StepFactory,
-  isCliMode: boolean
   textSecureService: TextSecureService
   loggingService: LoggingService
-  helpGenerationService: HelpGenerationService,
-  cliArgumentsParsingService: CliArgumentsParsingService
+  helpGenerationService: HelpGenerationService,  
   defaultIdentifiedStepOptionMaps: IdentifiedStepOptionMaps
   combinedIdentifiedStepOptionMaps: IdentifiedStepOptionMaps,
 }> = new WeakMap();
@@ -35,7 +33,6 @@ export class ContinuiApplication {
   constructor(
     activationCenter: ActivationCenter,
     stepFactory: StepFactory,
-    cliArgumentsParsingService: CliArgumentsParsingService,
     textSecureService: TextSecureService,
     loggingService: LoggingService,
     helpGenerationService: HelpGenerationService) {
@@ -46,9 +43,7 @@ export class ContinuiApplication {
       textSecureService,
       loggingService,
       helpGenerationService,
-      cliArgumentsParsingService, 
-      steps: [],
-      isCliMode: false,           
+      steps: [],        
       defaultIdentifiedStepOptionMaps: {},
       combinedIdentifiedStepOptionMaps: {},     
     });
@@ -68,23 +63,6 @@ export class ContinuiApplication {
 
       scope.steps.push(step);
     });    
-  }
-
-  public executeInCliMode(cliArguments: any[]): void {
-    const scope = privateScope.get(this);
-
-    scope.isCliMode = true;
-    scope.loggingService.log([{ 
-      text: 'Executing continui in',
-    }, {
-      text: ' CLI ',
-      textColor: 'red',
-      textColorType: LoggingDataColorTypes.name,
-    }, { 
-      text: 'mode.',
-    }]);
-
-    this.execute(scope.cliArgumentsParsingService.parse(cliArguments));
   }
 
   public execute(identifiedStepOptionMaps: IdentifiedStepOptionMaps): void {
@@ -197,11 +175,7 @@ export class ContinuiApplication {
           throw error;
         }
       }
-      scope.loggingService.log(`Execution done.`);
-
-      if (scope.isCliMode) {
-        process.exit(0);
-      }
+      scope.loggingService.log(`Execution done.`);     
     }.bind(this)).catch((error) => {
       console.error('\n\n',error);
       process.exit(1);
