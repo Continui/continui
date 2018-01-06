@@ -1,4 +1,3 @@
-import { Activator } from '../index';
 import { BuildInLoggingService } from './services/buildInLoggingService';
 import { BuildInTextTemplateService } from './services/buildInTextTemplateService';
 import { BuildInCliArgumentsParsingService } from 
@@ -12,12 +11,9 @@ import {
   StepActivationReferenceMode,
 } from 'continui-step';
 import { BuildInTextTemplateContextProvider } from './services/buildInTextTemplateContextProvider';
+import { ActivationCenter } from '../activationCenter';
 
 const buildInStepReferences: StepActivationReference[] = [{
-  alias: 'activationCenter',       
-  target:  this,
-  type: StepActivationReferenceType.constant,
-},{
   alias: 'loggingService', 
   target:  BuildInLoggingService,
 }, {
@@ -43,7 +39,15 @@ const buildInStepReferences: StepActivationReference[] = [{
 }];
 
 export class BuildInDependenciesRegistrar {
-  public registerBuilInReferencesIntoActivator(activator: Activator) {
-    buildInStepReferences.forEach(reference => activator.registerReference(reference));
+  public registerBuilInReferencesIntoActivator(activationCenter: ActivationCenter) {
+    
+    activationCenter.activator.registerReference({
+      alias: 'activationCenter',       
+      target:  activationCenter,
+      type: StepActivationReferenceType.constant,
+    });
+
+    buildInStepReferences.forEach(reference => activationCenter.activator
+                                                               .registerReference(reference));
   }
 }

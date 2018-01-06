@@ -17,7 +17,7 @@ import * as deepmerge from 'deepmerge';
 
 import co from 'co';
 
-const privateScope: WeakMap<Continui, {
+const privateScope: WeakMap<ContinuiApplication, {
   steps: Step<any>[]
   activationCenter: ActivationCenter,
   stepFactory: StepFactory,
@@ -30,7 +30,7 @@ const privateScope: WeakMap<Continui, {
   combinedIdentifiedStepOptionMaps: IdentifiedStepOptionMaps,
 }> = new WeakMap();
 
-export class Continui {
+export class ContinuiApplication {
 
   constructor(
     activationCenter: ActivationCenter,

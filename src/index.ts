@@ -1,22 +1,22 @@
-import { Continui } from './continui';
 import { ActivationCenter } from './activationCenter';
 import { BuildInDependenciesRegistrar } from './build-in/buildInDependenciesRegistrar';
+import { ContinuiApplicationFactory } from './continuiApplicationFactory';
 
 const activationCenter: ActivationCenter = new ActivationCenter();
+
 const buildInActivationRegistrar: BuildInDependenciesRegistrar = new BuildInDependenciesRegistrar();
+buildInActivationRegistrar.registerBuilInReferencesIntoActivator(activationCenter);
 
-buildInActivationRegistrar.registerBuilInReferencesIntoActivator(activationCenter.activator);
+const continuiApplicationFactory: ContinuiApplicationFactory = 
+ activationCenter.activator.resolve(ContinuiApplicationFactory);
 
 /**
- * Returns a new continui application ready to be executed.
- * @returns A new continui application.
+ * Represents an factory that allows the creation of continui applications.
  */
-export function createContinuiApplication(): Continui {
-  return activationCenter.activator.resolve(Continui);
-}
+export { continuiApplicationFactory as continuiApplicationFactory };
 
 /**
- * Represents an activation center that allows facilitate the dependency managment.
+ * Represents an activation center that allows the dependency managment.
  */
 export { activationCenter as activationCenter };
 
