@@ -5,8 +5,8 @@ describe('The Build In Text Secure Service', () => {
   it('Should replace all text registered as sensitive for "[secure]"', () => {
     const buildInTextSecureService: BuildInTextSecureService = new BuildInTextSecureService();
 
-    buildInTextSecureService.registerSersitiveText('-a-');
-    buildInTextSecureService.registerSersitiveText('-e-');
+    buildInTextSecureService.registerSensitiveText('-a-');
+    buildInTextSecureService.registerSensitiveText('-e-');
 
     assert.equal(buildInTextSecureService.parse(
                  '-a- can\'t get displayed as well the -e-.'),

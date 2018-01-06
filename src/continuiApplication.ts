@@ -152,7 +152,7 @@ export class ContinuiApplication {
           scope.loggingService.log('Starting the from options context creation for the step ' +
                                    `${step.identifier}(${step.name})`);
 
-          context = step.createsNewContextFromOptionsMap(stepOpionsMap);
+          context = step.createsContextFromOptionsMap(stepOpionsMap);
 
           scope.loggingService.log('Starting the restauration point creation for the step ' +
                                    `${step.identifier}(${step.name})`);
@@ -193,7 +193,7 @@ export class ContinuiApplication {
     scope.steps.forEach((step) => {
       step.options.forEach((option) => {
         if (option.isSecure) {
-          scope.textSecureService.registerSersitiveText(
+          scope.textSecureService.registerSensitiveText(
             scope.combinedIdentifiedStepOptionMaps[step.identifier][option.key]);
         }
       });

@@ -21,7 +21,7 @@ export class BuildInTextSecureService implements TextSecureService {
      * Register sensitive text to remove those on parsings.
      * @param sensitiveText Represents a sensitive text.
      */
-  public registerSersitiveText(sensitiveText: string): void {
+  public registerSensitiveText(sensitiveText: string): void {
     if (sensitiveText) {
       privateScope.get(this).sensitiveText.push(sensitiveText);
     }   
