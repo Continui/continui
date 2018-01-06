@@ -2,21 +2,12 @@ import {
   LoggingService,
   LoggingData,
   TextSecureService,
-  LoggingDataColorTypes
+  LoggingDataColorTypes,
 } from 'continui-services';
-import chalk, { Chalk } from 'chalk'
-
-type Services = {
-  textSecureService: TextSecureService,
-};
+import chalk, { Chalk } from 'chalk';
 
 const privateScope: WeakMap<BuildInLoggingService, {
-  services: Services
-  functions: {
-    parseLoggingData: (loggingData: LoggingData, indented?: boolean) => string,
-    setupDefaultLoggingDataValues: (loggingData: LoggingData) => void,
-    getConfiguredChalk: (loggingData: LoggingData) => Chalk,   
-  },
+  textSecureService: TextSecureService,
 }> = new WeakMap();
 
 /**
@@ -26,33 +17,36 @@ export class BuildInLoggingService implements LoggingService {
 
   constructor(textSecureService: TextSecureService) {
     privateScope.set(this, {
-      services: {
       textSecureService,
-      },
-      functions: {
-        parseLoggingData: parseLoggingData.bind(this),
-        setupDefaultLoggingDataValues: setupDefaultLoggingDataValues.bind(this),
-        getConfiguredChalk: getConfiguredChalk.bind(this)
-      },
-    })
+    });
   }
 
-    /**
-     * Logs data.
-     * @param data Represents the data that will be logged.
-     */
-  public log(...data: string[]): void;
-    /**
-     * Logs data.
-     * @param data Represents the data that will be logged.
-     */
-  public log(...data: LoggingData[]): void;
+   /**
+   * Logs data.
+   * @param data Represents the data that will be logged.
+   */
+  public log(data: string): void;
+  /**
+   * Logs data.
+   * @param data Represents the data that will be logged.
+   */
+  public log(data: string[]): void;
+  /**
+   * Logs data.
+   * @param data Represents the data that will be logged.
+   */
+  public log(data: LoggingData): void;
+  /**
+   * Logs data.
+   * @param data Represents the data that will be logged.
+   */
+  public log(data: LoggingData[]): void;
   public log(data: any): void {
-    const scope = privateScope.get(this); 
-    
+    const scope = privateScope.get(this);
     const unnormalizedLoggingDataList: any[] = data instanceof Array ? data : [data];
+    let parsedText: string = '';
 
-    unnormalizedLoggingDataList.forEach((unnormalizedLoggingData, index) => {
+    unnormalizedLoggingDataList.forEach((unnormalizedLoggingData) => {
       let normalizedLoggingData: LoggingData;
 
       if (typeof unnormalizedLoggingData === 'string') {
@@ -65,41 +59,95 @@ export class BuildInLoggingService implements LoggingService {
         throw Error('Can not log provided data \n\n' + unnormalizedLoggingData);
       }
 
-      console.log(scope.services
-                       .textSecureService
-                       .parse(scope.functions
-                                   .parseLoggingData(normalizedLoggingData, index > 0)));
+      parsedText += scope.textSecureService
+                         .parse(this.parseLoggingData(normalizedLoggingData, !!parsedText));
     });
-  }
-}
 
-function parseLoggingData(loggingData: LoggingData, indented?: boolean) : string { 
-  const scope = privateScope.get(this);
-  const date: string = new Date().toTimeString().substr(0, 8); 
-
-  scope.functions.setupDefaultLoggingDataValues(loggingData)
-
-  let chalkSetup = scope.functions.getConfiguredChalk(loggingData);
-  let parsedText: string = indented ? '' : `[${chalk.gray(date)}] ${chalkSetup(loggingData.text)}`;
-
-  return parsedText;
-}
-
-function setupDefaultLoggingDataValues(loggingData: LoggingData) {
-  loggingData.textColor = loggingData.textColor || 'black';
-  loggingData.textColorType = loggingData.textColorType || LoggingDataColorTypes.name;
-  loggingData.backColor = loggingData.backColor || 'black';
-  loggingData.backColorType = loggingData.backColorType || LoggingDataColorTypes.name;
-  loggingData.style = loggingData.style || 'reset';
-}
-
-function SetupChalkForText(Chalk,  loggingData: LoggingData) : Chalk {
-
-  let configuredChalk: Chalk = chalk;
-
-  switch(loggingData.textColorType) {
-
+    console.log(parsedText);
   }
 
-  return configuredChalk;
+  /**
+   * Parse the data to apply styles and colors defined in the logging data.
+   * @param loggingData Represents the data that will be logged.
+   * @param isConcatenating Represents a boolean value specifying if the reslt text will be concatenated
+   */
+  private parseLoggingData(loggingData: LoggingData, isConcatenating?: boolean): string {
+    const scope = privateScope.get(this);
+    const date: string = new Date().toTimeString().substr(0, 8);
+
+    let chalkSetup: Chalk = chalk;
+    chalkSetup = this.getChalkSetupForText(chalkSetup, loggingData);
+    chalkSetup = this.getChalkSetupForBackgound(chalkSetup, loggingData);
+    
+    const parsedText: string = 
+     (isConcatenating ? '' : `[${chalk.gray(date)}] `) + `${chalkSetup(loggingData.text)}`;
+    
+    return parsedText;
+  }
+
+  /**
+   * Returns a fomatted chalk instance for text based on the provided logging data.
+   * @param chalk Represents the chalk instance which the formated will be based.
+   * @param loggingData Represents th logging data.
+   */
+  private getChalkSetupForText(chalk: Chalk, loggingData: LoggingData): Chalk {
+
+    let configuredChalk: Chalk = chalk;
+
+    if (configuredChalk[loggingData.style]) {
+      configuredChalk = configuredChalk[loggingData.style]; 
+    }
+
+    if (loggingData.textColor) {
+      switch (loggingData.textColorType) {
+        default:
+        case LoggingDataColorTypes.name:
+          configuredChalk = configuredChalk.keyword(loggingData.textColor);
+          break;
+        case LoggingDataColorTypes.hex:
+          configuredChalk = configuredChalk.hex(loggingData.textColor);
+          break;
+        case LoggingDataColorTypes.rgb:
+          const rgbCollection: number[] = 
+          loggingData.textColor.split(',').map(rgbColletionItem => parseInt(rgbColletionItem, 10));
+          configuredChalk = configuredChalk.rgb(rgbCollection[0],
+                                                rgbCollection[1],
+                                                rgbCollection[2]);
+          break;
+      }
+    }
+
+    return configuredChalk;
+  }
+
+  /**
+   * Returns a fomatted chalk instance for text background based on the provided logging data.
+   * @param chalk Represents the chalk instance which the formated will be based.
+   * @param loggingData Represents th logging data.
+   */
+  private getChalkSetupForBackgound(chalk: Chalk, loggingData: LoggingData): Chalk {
+
+    let configuredChalk: Chalk = chalk;
+
+    if (loggingData.backColor) {      
+      switch (loggingData.backColorType) {
+        default:
+        case LoggingDataColorTypes.name:
+          configuredChalk = configuredChalk.bgKeyword(loggingData.backColor);
+          break;
+        case LoggingDataColorTypes.hex:
+          configuredChalk = configuredChalk.bgHex(loggingData.backColor);
+          break;
+        case LoggingDataColorTypes.rgb:
+          const rgbCollection: number[] = 
+          loggingData.backColor.split(',').map(rgbColletionItem => parseInt(rgbColletionItem, 10));
+          configuredChalk = configuredChalk.bgRgb(rgbCollection[0],
+                                                  rgbCollection[1],
+                                                  rgbCollection[2]);
+          break;
+      }
+    }
+
+    return configuredChalk;
+  }
 }

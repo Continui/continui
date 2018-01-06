@@ -3,7 +3,7 @@ import { Step,
          StepOptionTypes,
          StepOptionValueMap,
          IdentifiedStepOptionMaps } from 'continui-step';
-import { LoggingService, TextSecureService } from 'continui-services';
+import { LoggingService, LoggingDataColorTypes, TextSecureService } from 'continui-services';
 import { error } from 'util';
 import { fail } from 'assert';
 import { HelpGenerationService } from './services/helpGenerationService';
@@ -74,7 +74,15 @@ export class Continui {
     const scope = privateScope.get(this);
 
     scope.isCliMode = true;
-    scope.loggingService.log('Executing continui in CLI mode');
+    scope.loggingService.log([{ 
+      text: 'Executing continui in',
+    }, {
+      text: ' CLI ',
+      textColor: 'red',
+      textColorType: LoggingDataColorTypes.name,
+    }, { 
+      text: 'mode.',
+    }]);
 
     this.execute(scope.cliArgumentsParsingService.parse(cliArguments));
   }
@@ -181,7 +189,7 @@ export class Continui {
 
         } catch (error) {
           scope.loggingService.log(`Restoring steps executions due error on step ` + 
-                                   `${step.identifier}(${step.name})`, 
+                                   `${step.identifier}(${step.name})` +
                                    error.message || error);
           yield this.restoreExecutedStep(executedStepContextMaps);
           scope.loggingService.log(`Execution fail.`);
@@ -233,14 +241,15 @@ export class Continui {
                                         scope.helpGenerationService
                                              .getStepOptionsHelp(...this.getOptions());
 
-    scope.loggingService.log('Help requested', '\n' + generatedHelp);
+    scope.loggingService.log('Help requested \n\n Help \n\n' + generatedHelp);
   }
 
   private displaySteps() {
     const scope = privateScope.get(this);
 
-    scope.loggingService.log('Steps requested', 
-                             '\n' + scope.steps.map(step => `${step.identifier}(${step.name})`));
+    scope.loggingService
+         .log('Steps requested \n' +  
+               scope.steps.map(step => `${step.identifier}(${step.name})`).join(' '));
   }
 
   private loadStepDefinitions(modules: string | string[]) {
@@ -291,7 +300,7 @@ export class Continui {
         yield step.restore(executedStepContextMap.stepOptionValueMap, 
                            executedStepContextMap.context) || [];
       } catch (error) {
-        scope.loggingService.log(`Error restoring step ${step.identifier}(${step.name})`, error);
+        scope.loggingService.log(`Error restoring step ${step.identifier}(${step.name}) ` + error);
       }            
     }
         
