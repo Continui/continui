@@ -4,7 +4,6 @@ import { BuildInCliArgumentsParsingService } from
   './services/buildInCliArgumentsParsingService';
 import { BuildInHelpGenerationService } from './services/buildInHelpGenerationService';
 import { BuildInTextSecureService } from './services/buildInTextSecureService';
-import { StepFactory } from '../stepFactory';
 import {
   StepActivationReference,
   StepActivationReferenceType,
@@ -12,6 +11,7 @@ import {
 } from 'continui-step';
 import { BuildInTextTemplateContextProvider } from './services/buildInTextTemplateContextProvider';
 import { ActivationCenter } from '../activationCenter';
+import { BuildInStepFactory } from './buildInStepFactory';
 
 const buildInStepReferences: StepActivationReference[] = [{
   alias: 'loggingService', 
@@ -31,7 +31,7 @@ const buildInStepReferences: StepActivationReference[] = [{
   target:  BuildInHelpGenerationService,
 },{
   alias: 'stepFactory',
-  target: StepFactory,
+  target: BuildInStepFactory,
 },{
   alias: 'textSecureService',
   target:  BuildInTextSecureService,

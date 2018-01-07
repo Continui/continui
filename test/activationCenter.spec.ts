@@ -3,15 +3,16 @@ import { IMock, Mock, It, Times } from 'typemoq';
 import { Activator } from '../src/activator';
 import { ActivationCenter } from '../src/activationCenter';
 import { Step, StepActivationReference } from 'continui-step';
+import { BuildInActivationCenter } from '../src/build-in/buildInActivationCenter';
 
 describe('The Activation Center', () => {
 
   it('Should throw and error when an step activation definition is provided without an step',
      () => {
-       const activationCenter: ActivationCenter = new ActivationCenter();
+       const activationCenter: ActivationCenter = new BuildInActivationCenter();
 
        assert.throws(() => {
-         activationCenter.addStepActivationDefinitions({
+         activationCenter.loadStepActivationDefinitions({
            identifier: 'test',
            step: null,
            activationReferences: [],
@@ -21,10 +22,10 @@ describe('The Activation Center', () => {
 
   it('Should throw and error when exist repetitive step activation definition step identifiers',
      () => {
-       const activationCenter: ActivationCenter = new ActivationCenter();
+       const activationCenter: ActivationCenter = new BuildInActivationCenter();
 
        assert.throws(() => {
-         activationCenter.addStepActivationDefinitions(...[{
+         activationCenter.loadStepActivationDefinitions(...[{
            identifier: 'test',
            step () {},
            activationReferences: [],
