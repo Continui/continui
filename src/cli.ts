@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 
-import { continuiApplicationFactory } from './index';
+import { continuiApplicationFactory, activationCenter } from './index';
 import { CliArgumentsParsingService } from './services/cliArgumentsParsingService';
-import {
-    BuildInCliArgumentsParsingService,
-} from './build-in/services/buildInCliArgumentsParsingService';
 
 const cliArgumentsParsingService: CliArgumentsParsingService = 
- new BuildInCliArgumentsParsingService();
+    activationCenter.activator
+                    .resolve('cliArgumentsParsingService');
 
 continuiApplicationFactory.createsContinuiApplication()
                           .execute(cliArgumentsParsingService.parse(process.argv));
