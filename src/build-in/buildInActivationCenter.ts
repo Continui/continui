@@ -12,11 +12,7 @@ import {
 
 const privateScope: WeakMap<BuildInActivationCenter, {
   activator: Activator
-  stepActivationDefinitions: StepActivationDefinition[]
-  activatorAndStepActivationDefinitionsMap: {
-    activator: Activator,
-    StepActivationDefinition: StepActivationDefinition[],
-  }[],
+  stepActivationDefinitions: StepActivationDefinition[],
 }> = new WeakMap();
 
 /**
@@ -25,12 +21,9 @@ const privateScope: WeakMap<BuildInActivationCenter, {
 export class BuildInActivationCenter implements ActivationCenter {
 
   constructor() {
-    const buildInActivator: Activator = new BuildInActivator();
-
     privateScope.set(this, {
-      activator: buildInActivator,
+      activator: new BuildInActivator(),
       stepActivationDefinitions: [],
-      activatorAndStepActivationDefinitionsMap: [],
     });
   }
 
@@ -50,8 +43,14 @@ export class BuildInActivationCenter implements ActivationCenter {
     const scope = privateScope.get(this);
 
     stepActivationDefinitions.forEach((stepActivationDefinition) => {
+
+      if (!stepActivationDefinition.identifier) {
+        throw new Error('One of the suplied step activation definition doesn\'t have the identifier.');
+      }
+
       if (!stepActivationDefinition.step) {
-        throw new Error('One of the suplied step activation definition doesn\'t have an step.');
+        throw new Error('The suplied step activation definition with identifier [' +
+                         stepActivationDefinition.identifier + '] doesn\'t have an step.');
       }
 
       if (scope.stepActivationDefinitions.find(storedStepActivationDefinition =>
@@ -61,7 +60,7 @@ export class BuildInActivationCenter implements ActivationCenter {
       }
 
       scope.stepActivationDefinitions.push(stepActivationDefinition);
-      this.loadStepActivationDefinitionsIntoActivator(stepActivationDefinition);
+      this.loadStepActivationDefinitionIntoActivator(stepActivationDefinition);
     });
   }
 
@@ -69,43 +68,16 @@ export class BuildInActivationCenter implements ActivationCenter {
    * Loads provided step definitions into the activator.
    * @param stepActivationDefinitions Represents the step definitions to load.
    */
-  private loadStepActivationDefinitionsIntoActivator(...definitions: StepActivationDefinition[]) {
-    const scope = privateScope.get(this);
-
-    let activatorAndStepActivationDefinitionsMap = scope.activatorAndStepActivationDefinitionsMap
-            .find(activatorAndStepActivationDefinitionsMap =>
-                  activatorAndStepActivationDefinitionsMap.activator === this.activator);
-
-    if (!activatorAndStepActivationDefinitionsMap) {
-      activatorAndStepActivationDefinitionsMap = {
-        activator: this.activator,
-        StepActivationDefinition: [],
-      };
-      scope.activatorAndStepActivationDefinitionsMap.push(activatorAndStepActivationDefinitionsMap);
-    }
-
-    definitions.forEach((storedStepActivationDefinition) => {
-
-      const storeStepIdentifier: string = storedStepActivationDefinition.identifier;
-
-      if (!activatorAndStepActivationDefinitionsMap
-              .StepActivationDefinition
-              .find(stepActivationDefinition => 
-                    stepActivationDefinition.identifier === storeStepIdentifier)) {
-
-        activatorAndStepActivationDefinitionsMap.StepActivationDefinition
-                                                .push(storedStepActivationDefinition);
-        this.activator.registerReference({
-          alias: 'step',
-          target: storedStepActivationDefinition.step,
-          context: storedStepActivationDefinition.identifier,
-        });
-        
-        storedStepActivationDefinition.activationReferences.forEach((activationReference) => {
-          activationReference.context = storedStepActivationDefinition.identifier;
-          this.activator.registerReference(activationReference);
-        });
-      }
+  private loadStepActivationDefinitionIntoActivator(stepActivationDefinition: StepActivationDefinition) {
+    this.activator.registerReference({
+      alias: 'step',
+      target: stepActivationDefinition.step,
+      context: stepActivationDefinition.identifier,
+    });
+    
+    stepActivationDefinition.activationReferences.forEach((activationReference) => {
+      activationReference.context = stepActivationDefinition.identifier;
+      this.activator.registerReference(activationReference);
     });
   }
 }
