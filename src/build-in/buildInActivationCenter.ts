@@ -45,7 +45,8 @@ export class BuildInActivationCenter implements ActivationCenter {
     stepActivationDefinitions.forEach((stepActivationDefinition) => {
 
       if (!stepActivationDefinition.identifier) {
-        throw new Error('One of the suplied step activation definition doesn\'t have the identifier.');
+        throw new Error('One of the suplied step activation definition doesn\'t have the ' + 
+                        'identifier.');
       }
 
       if (!stepActivationDefinition.step) {
@@ -68,16 +69,17 @@ export class BuildInActivationCenter implements ActivationCenter {
    * Loads provided step definitions into the activator.
    * @param stepActivationDefinitions Represents the step definitions to load.
    */
-  private loadStepActivationDefinitionIntoActivator(stepActivationDefinition: StepActivationDefinition) {
+  private loadStepActivationDefinitionIntoActivator(
+    stepActivationDefinition: StepActivationDefinition) {
+
     this.activator.registerReference({
       alias: 'step',
       target: stepActivationDefinition.step,
-      context: stepActivationDefinition.identifier,
     });
     
-    stepActivationDefinition.activationReferences.forEach((activationReference) => {
-      activationReference.context = stepActivationDefinition.identifier;
-      this.activator.registerReference(activationReference);
-    });
+    stepActivationDefinition.activationReferences.forEach(activationReference =>
+      this.activator.registerReferenceWithContext(activationReference,
+                                                  stepActivationDefinition.identifier),
+    );
   }
 }

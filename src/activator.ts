@@ -12,6 +12,14 @@ export interface Activator {
   registerReference(reference: StepActivationReference) : Activator; 
 
     /**
+     * Register dependencies with the provided alias, in the provided context.
+     * @param reference Represents the reference that will be registered.
+     * @param context Represents the where the registration will occurs.
+     * @returns The activator instance to fluently register dependencies.
+     */
+  registerReferenceWithContext(reference: StepActivationReference, context: string) : Activator; 
+
+    /**
      * Resolve the dependency with the provided alias.
      * @param aliasOrTarget Represents the dependency to be resolved.
      * @returns A resolved dependency.
@@ -19,18 +27,10 @@ export interface Activator {
   resolve<DependencyType>(aliasOrTarget: any) : DependencyType;
 
     /**
-     * Resolve the dependency with the provided alias, if is registered with the provided context.
+     * Resolve the dependency with the provided alias, in the provided context.
      * @param aliasOrTarget Represents the dependency to be resolved.
      * @param context Represents the where the resolution will occurs.
      * @returns A resolved dependency.
      */
   resolveWithContext<DependencyType>(aliasOrTarget: any, context: string);
-
-    /**
-     * Returns a boolean value specifying if the activation has a dependency registered with the
-     * provided alias.
-     * @param alias Represents the alias to look for.
-     * @returns A boolean value.
-     */
-  hasAlias(alias: string): boolean;
 }

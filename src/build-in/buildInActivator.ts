@@ -5,6 +5,8 @@ import {
   StepActivationReferenceMode,
   StepActivationReferenceType, 
 } from 'continui-step';
+import { AsAndInAndWhenSyntax } from '@jems/di/dist/fluent-syntaxes/asAndInAndWhenSyntax';
+import { connect } from 'tls';
 
 const privateScope:WeakMap<BuildInActivator, {
   kernel: Kernel,
@@ -27,47 +29,94 @@ export class BuildInActivator implements Activator {
      * @returns The activator instance to fluently register dependencies.
      */
   public registerReference(reference: StepActivationReference) : Activator {
-    const kernel: Kernel = privateScope.get(this).kernel;
-    const bind =  kernel.bind(reference.alias);
-        
-    if (reference.context) {
-      if (!kernel.hasContainer(reference.context)) {
-        kernel.createContainer(reference.context, ['default']);
-      }
-
-      bind.inside(reference.context);
-    }
-        
+    const bind = this.getKernelBind(reference.alias);        
     const bindBehavior = bind.to(reference.target);
-
-    switch (reference.type) {      
-      case StepActivationReferenceType.constant:
-        bindBehavior.asConstant();
-        break;
-      case StepActivationReferenceType.executableFunction:
-        bindBehavior.asBuilderFunction();
-        break;
-      case StepActivationReferenceType.instance:
-      default:
-        bindBehavior.asInstance();
-        break;
-    }
     
-    switch (reference.mode) {      
-      case StepActivationReferenceMode.perResolution:
-        bindBehavior.inPerResolutionMode();
-        break;
-      case StepActivationReferenceMode.singelton:
-        bindBehavior.inSingletonMode();
-        break;
-      case StepActivationReferenceMode.each:
-      default:
-        bindBehavior.inPerCallMode();
-        break;
-    }
+    this.configureBindReferenceType(bindBehavior, reference.type);
+    this.configureBindReferenceMode(bindBehavior, reference.mode);
 
     return this;
   }
+
+  /**
+   * Register dependencies with the provided alias, in the provided context.
+   * @param reference Represents the reference that will be registered.
+   * @param context Represents the where the registration will occurs.
+   * @returns The activator instance to fluently register dependencies.
+   */
+  public registerReferenceWithContext(reference: StepActivationReference,
+                                      context: string) : Activator {
+    if (!context) {
+      throw Error('Must provided a valid context');
+    }
+
+    const kernel: Kernel = privateScope.get(this).kernel;
+    const bind = this.getKernelBind(reference.alias); 
+    
+    if (!kernel.hasContainer(context)) {
+      kernel.createContainer(context, ['default']);
+    }
+
+    bind.inside(context);
+    
+    const bindBehavior = bind.to(reference.target);
+    
+    this.configureBindReferenceType(bindBehavior, reference.type);
+    this.configureBindReferenceMode(bindBehavior, reference.mode);
+
+    return this;
+  }
+
+  /**
+   * Returns a bind syntax with the providd alias.
+   * @param alias Represents the bind alias
+   */
+  private getKernelBind(alias: string) {
+    const kernel: Kernel = privateScope.get(this).kernel;
+    return kernel.bind(alias);
+  }
+
+  /**
+   * Configures the provided bind with the provided step activation reference type.
+   * @param syntax Represents the syntax to fluently configure the bind.
+   * @param stepActivationReferenceType Represetns the activation reference type to be configured.
+   */
+  private configureBindReferenceType(syntax: AsAndInAndWhenSyntax,
+                                     stepActivationReferenceType: StepActivationReferenceType) {
+    switch (stepActivationReferenceType) {      
+      case StepActivationReferenceType.constant:
+        syntax.asConstant();
+        break;
+      case StepActivationReferenceType.executableFunction:
+        syntax.asBuilderFunction();
+        break;
+      case StepActivationReferenceType.instance:
+      default:
+        syntax.asInstance();
+        break;
+    }
+  }
+
+  /**
+   * Configures the provided bind with the provided step activation reference mode.
+   * @param syntax Represents the syntax to fluently configure the bind.
+   * @param stepActivationReferenceMode Represetns the activation reference mode to be configured.
+   */
+  private configureBindReferenceMode(syntax: AsAndInAndWhenSyntax,
+                                     stepActivationReferenceMode: StepActivationReferenceMode) {
+    switch (stepActivationReferenceMode) {      
+      case StepActivationReferenceMode.perResolution:
+        syntax.inPerResolutionMode();
+        break;
+      case StepActivationReferenceMode.singelton:
+        syntax.inSingletonMode();
+        break;
+      case StepActivationReferenceMode.each:
+      default:
+        syntax.inPerCallMode();
+        break;
+    }
+  } 
     
     /**
      * Resolve the dependency with the provided alias.
@@ -75,27 +124,21 @@ export class BuildInActivator implements Activator {
      * @returns A resolved dependency.
      */
   public resolve<DependencyType>(aliasOrTarget: any) : DependencyType {
-    return <DependencyType>privateScope.get(this).kernel.resolve(aliasOrTarget);
+    return <DependencyType>privateScope.get(this)
+                                       .kernel
+                                       .resolve(aliasOrTarget);
   }
 
     /**
-     * Resolve the dependency with the provided alias, if is registered with the provided context.
+     * Resolve the dependency with the provided alias, in the provided context.
      * @param aliasOrTarget Represents the dependency to be resolved.
      * @param context Represents the where the resolution will occurs.
      * @returns A resolved dependency.
      */
   public resolveWithContext<DependencyType>(aliasOrTarget: any, context: string) {
-    return <DependencyType>privateScope.get(this).kernel.usingContainer(context)
-                                                        .resolve(aliasOrTarget);
-  }
-
-    /**
-     * Returns a boolean value specifying if the activation has a dependency registered with the
-     * provided alias.
-     * @param alias Represents the alias to look for.
-     * @returns A boolean value.
-     */
-  public hasAlias(alias: string): boolean {
-    return privateScope.get(this).kernel.canResolve(alias);
+    return <DependencyType>privateScope.get(this)
+                                       .kernel
+                                       .usingContainer(context)
+                                       .resolve(aliasOrTarget);
   }
 }
