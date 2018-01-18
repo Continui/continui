@@ -1,7 +1,10 @@
 import * as assert from 'assert';
-import { CliArgumentsParsingService } from '../../../src/services/cliArgumentsParsingService';
-import { BuildInCliArgumentsParsingService } from 
-    '../../../src/build-in/services/buildInCliArgumentsParsingService';
+import {
+  CliArgumentsParsingService,
+} from '../../../src/domain/services/cliArgumentsParsingService';
+import {
+  BuildInCliArgumentsParsingService,
+} from '../../../src/build-in/services/buildInCliArgumentsParsingService';
 import { IdentifiedStepOptionMaps } from 'continui-step';
 
 describe('The Build In Cli Arguments Parsing Service', () => {

@@ -1,4 +1,4 @@
-import { Activator } from '../activator';
+import { Activator } from '../domain/activator';
 import { createKernel, Kernel } from '@jems/di';
 import { 
   StepActivationReference,

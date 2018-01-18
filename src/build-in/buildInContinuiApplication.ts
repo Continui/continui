@@ -1,4 +1,4 @@
-import { ContinuiApplication } from '../continuiApplication';
+import { ContinuiApplication } from '../domain/continuiApplication';
 import { Step,
          StepOption,
          StepOptionTypes,
@@ -7,10 +7,10 @@ import { Step,
 import { LoggingService, LoggingDataColorTypes, TextSecureService } from 'continui-services';
 import { error } from 'util';
 import { fail } from 'assert';
-import { HelpGenerationService } from '../services/helpGenerationService';
-import { CliArgumentsParsingService } from '../services/cliArgumentsParsingService';
-import { StepFactory } from '../stepFactory';
-import { ActivationCenter } from '../activationCenter';
+import { HelpGenerationService } from '../domain/services/helpGenerationService';
+import { CliArgumentsParsingService } from '../domain/services/cliArgumentsParsingService';
+import { StepFactory } from '../domain/stepFactory';
+import { ActivationCenter } from '../domain/activationCenter';
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -51,22 +51,6 @@ export class BuildInContinuiApplication implements ContinuiApplication {
       defaultIdentifiedStepOptionMaps: {},
       combinedIdentifiedStepOptionMaps: {},     
     });
-  }
-
-  private loadSteps(...steps: Step<any>[]): void {        
-    const scope = privateScope.get(this);
-    steps.forEach((step) => {
-
-      if (scope.steps.find(addedStep => step.identifier === addedStep.identifier)) {
-        throw new Error(`There is already an step with the identifier ${step.identifier}`);
-      }
-
-      scope.defaultIdentifiedStepOptionMaps[step.identifier] = {};
-      step.options.forEach(option => 
-        scope.defaultIdentifiedStepOptionMaps[step.identifier][option.key] = option.defaultValue);
-
-      scope.steps.push(step);
-    });    
   }
 
   /**
@@ -188,6 +172,22 @@ export class BuildInContinuiApplication implements ContinuiApplication {
       console.error('\n\n',error);
       process.exit(1);
     });
+  }
+
+  private loadSteps(...steps: Step<any>[]): void {        
+    const scope = privateScope.get(this);
+    steps.forEach((step) => {
+
+      if (scope.steps.find(addedStep => step.identifier === addedStep.identifier)) {
+        throw new Error(`There is already an step with the identifier ${step.identifier}`);
+      }
+
+      scope.defaultIdentifiedStepOptionMaps[step.identifier] = {};
+      step.options.forEach(option => 
+        scope.defaultIdentifiedStepOptionMaps[step.identifier][option.key] = option.defaultValue);
+
+      scope.steps.push(step);
+    });    
   }
 
   private getOptionsFromRootFile(): IdentifiedStepOptionMaps {

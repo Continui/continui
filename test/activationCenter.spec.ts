@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import { IMock, Mock, It, Times } from 'typemoq';
-import { Activator } from '../src/activator';
-import { ActivationCenter } from '../src/activationCenter';
+import { Activator } from '../src/domain/activator';
+import { ActivationCenter } from '../src/domain/activationCenter';
 import { Step, StepActivationReference } from 'continui-step';
 import { BuildInActivationCenter } from '../src/build-in/buildInActivationCenter';
 

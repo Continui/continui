@@ -1,6 +1,6 @@
 import { Step } from 'continui-step';
-import { ActivationCenter } from '../activationCenter';
-import { StepFactory } from '../stepFactory';
+import { ActivationCenter } from '../domain/activationCenter';
+import { StepFactory } from '../domain/stepFactory';
 
 const privateScope:WeakMap<BuildInStepFactory, {
   activationCenter:ActivationCenter,

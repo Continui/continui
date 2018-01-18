@@ -1,6 +1,6 @@
-import { ContinuiApplicationFactory } from '../continuiApplicationFactory';
-import { ContinuiApplication } from '../continuiApplication';
-import { ActivationCenter } from '../activationCenter';
+import { ContinuiApplicationFactory } from '../domain/continuiApplicationFactory';
+import { ContinuiApplication } from '../domain/continuiApplication';
+import { ActivationCenter } from '../domain/activationCenter';
 import { BuildInContinuiApplication } from './buildInContinuiApplication';
 
 const privateScope: WeakMap<BuildInContinuiApplicationFactory, {

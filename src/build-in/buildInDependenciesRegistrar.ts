@@ -10,7 +10,7 @@ import {
   StepActivationReferenceMode,
 } from 'continui-step';
 import { BuildInTextTemplateContextProvider } from './services/buildInTextTemplateContextProvider';
-import { ActivationCenter } from '../activationCenter';
+import { ActivationCenter } from '../domain/activationCenter';
 import { BuildInStepFactory } from './buildInStepFactory';
 
 const buildInStepReferences: StepActivationReference[] = [{

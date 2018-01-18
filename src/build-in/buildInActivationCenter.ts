@@ -1,5 +1,5 @@
-import { ActivationCenter } from '../activationCenter';
-import { Activator } from '../activator';
+import { ActivationCenter } from '../domain/activationCenter';
+import { Activator } from '../domain/activator';
 import { BuildInActivator } from './buildInActivator';
 import { 
   Step,

@@ -1,4 +1,4 @@
-import { CliArgumentsParsingService } from '../../services/cliArgumentsParsingService';
+import { CliArgumentsParsingService } from '../../domain/services/cliArgumentsParsingService';
 import { IdentifiedStepOptionMaps } from 'continui-step';
 
 const minimist = require('minimist');

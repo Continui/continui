@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { continuiApplicationFactory, activationCenter } from './index';
-import { CliArgumentsParsingService } from './services/cliArgumentsParsingService';
+import { CliArgumentsParsingService } from './domain/services/cliArgumentsParsingService';
 
 const cliArgumentsParsingService: CliArgumentsParsingService = 
     activationCenter.activator

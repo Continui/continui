@@ -1,5 +1,5 @@
 import { Step, StepOption } from 'continui-step';
-import { HelpGenerationService } from '../../services/helpGenerationService';
+import { HelpGenerationService } from '../../domain/services/helpGenerationService';
 
 /**
  * Represents a service that generate help.
