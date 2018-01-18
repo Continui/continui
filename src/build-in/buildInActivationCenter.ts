@@ -72,10 +72,10 @@ export class BuildInActivationCenter implements ActivationCenter {
   private loadStepActivationDefinitionIntoActivator(
     stepActivationDefinition: StepActivationDefinition) {
 
-    this.activator.registerReference({
+    this.activator.registerReferenceWithContext({
       alias: 'step',
-      target: stepActivationDefinition.step,
-    });
+      target: stepActivationDefinition.step
+    }, stepActivationDefinition.identifier);
     
     stepActivationDefinition.activationReferences.forEach(activationReference =>
       this.activator.registerReferenceWithContext(activationReference,
