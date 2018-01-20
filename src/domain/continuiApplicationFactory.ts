@@ -1,4 +1,5 @@
 import { ContinuiApplication } from './continuiApplication';
+import { ExecutionConfiguration } from './models/executionConfiguration';
 
 /**
  * Represents a factory that allows the creation of continui applications.
@@ -7,7 +8,8 @@ export interface ContinuiApplicationFactory {
 
     /**
      * Returns a new continui application ready to be executed.
+     * @param executionConfiguration Represents the execution configuration for the application.
      * @returns A new continui application.
      */
-  createsContinuiApplication(): ContinuiApplication;
+  createsContinuiApplication(executionConfiguration: ExecutionConfiguration): ContinuiApplication;
 }
