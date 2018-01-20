@@ -39,9 +39,9 @@ const executionConfiguration: ExecutionConfiguration =
     executionConfigurationMergingService.mergeExecutionConfigurations(fromFileExecutionConfiguration,
                                                                       cliExecutionConfiguration);
 
-executionConfiguration.cofigurationFile = null;
+executionConfiguration.cofigurationFile = 'ignore-file-configuration'; // TODO: Fix this magic str
 
-const requestedCliRendererKeys = cliRenderers.filter(cliRenderer => {
+const requestedCliRenderers = cliRenderers.filter(cliRenderer => {
     let isRendererKeyRequested: boolean = false;
 
     cliRenderer.keys.forEach(cliRedererKey => {
@@ -53,9 +53,9 @@ const requestedCliRendererKeys = cliRenderers.filter(cliRenderer => {
     return isRendererKeyRequested;
 });
 
-requestedCliRendererKeys.forEach(cliRenderer => cliRenderer.render(executionConfiguration) )
+requestedCliRenderers.forEach(cliRenderer => cliRenderer.render(executionConfiguration) )
 
-if (!requestedCliRendererKeys.length) {
-    continuiApplicationFactory.createsContinuiApplication()
-                              .execute({});
+if (!requestedCliRenderers.length) {
+    continuiApplicationFactory.createsContinuiApplication(executionConfiguration)
+                              .execute();
 }

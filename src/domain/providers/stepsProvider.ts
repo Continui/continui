@@ -10,5 +10,5 @@ export interface StepProvider {
      * @param stepModules Represents the step modules where the step definitions will be load from.
      * @returns A list of steps.
      */
-  getStepsFromStepModules(stepModules: string[]): Step<any>;
+  getStepsFromStepModules(stepModules: string[]): Step<any>[];
 }

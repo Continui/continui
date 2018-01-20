@@ -234,24 +234,7 @@ export class BuildInContinuiApplication implements ContinuiApplication {
                scope.steps.map(step => `${step.identifier}(${step.name})`).join(' '));
   }
 
-  private loadStepDefinitions(modules: string | string[]) {
-    
-    let modulesArray: string[];
 
-    if (typeof modules === 'string') {
-      modulesArray = [modules];
-    }
-    
-    if (modules instanceof Array) {
-      modulesArray = modules;
-    }
-
-    modulesArray.forEach((module) => {
-      const moduleResult:any = require(module);
-      privateScope.get(this).activationCenter
-                            .loadStepActivationDefinitions(moduleResult['default'] || moduleResult);
-    });
-  }
 
   private getStep(stepIdentifier: string): Step<any> {
     const scope = privateScope.get(this);

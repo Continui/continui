@@ -1,4 +1,4 @@
-import { IdentifiedStepOptionMaps } from 'continui-step';
+import { IdentifiedStepOptionMaps, Step } from 'continui-step';
 
 /**
 * Represents a continui application.
@@ -6,8 +6,13 @@ import { IdentifiedStepOptionMaps } from 'continui-step';
 export interface ContinuiApplication {
 
     /**
-    * Execute the continui application and required steps base on th provided options. 
-    * @param identifiedStepOptionMaps Represents the steps options.
+    * Execute the continui loaded application.
     */
-  execute(identifiedStepOptionMaps: IdentifiedStepOptionMaps): void;
+  execute(): void;
+
+    /**
+     * Load the provided steps to his future execution.
+     * @param steps Represents the steps that will be executed.
+     */
+  loadSteps(...steps: Step<any>[]): void
 }
