@@ -8,8 +8,7 @@ export interface ContinuiApplicationFactory {
 
     /**
      * Returns a new continui application ready to be executed.
-     * @param executionConfiguration Represents the execution configuration for the application.
      * @returns A new continui application.
      */
-  createsContinuiApplication(executionConfiguration: ExecutionConfiguration): ContinuiApplication;
+  createsContinuiApplication(): ContinuiApplication;
 }

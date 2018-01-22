@@ -1,61 +1,84 @@
 #!/usr/bin/env node
 
-import { continuiApplicationFactory, activationCenter } from './index';
+import { continuiApplicationFactory, activator } from './index';
 import { ExecutionConfiguration } from './domain/models/executionConfiguration';
 import { CliRenderers } from './domain/cli/cliRenderer';
 import {
-    CliExecutionConfigurationParsingService
+    CliExecutionConfigurationParsingService,
 } from './domain/cli/cliExecutionConfigurationParsingService';
 import {
-    FromFileExecutionConfigurationProvider
+    FromFileExecutionConfigurationProvider,
 } from './domain/providers/fromFileExecutionConfigurationProvider';
 import {
-    ExecutionConfigurationMergingService
+    ExecutionConfigurationMergingService,
 } from './domain/services/executionConfigurationMergingService';
 import { connect } from 'http2';
 import { date } from '../../continui-step/dist/definitions/stepOptionType';
 
-
-
-const cliRenderers: CliRenderers[] = activationCenter.activator.resolve('cliRenderers');
+const cliRenderers: CliRenderers[] = activator.resolve('cliRenderers');
 const cliExecutionConfigurationParsingService: CliExecutionConfigurationParsingService =
-    activationCenter.activator
-                    .resolve('cliExecutionConfigurationParsingService');
+    activator.resolve('cliExecutionConfigurationParsingService');
 const fromFileExecutionConfigurationProvider: FromFileExecutionConfigurationProvider =
-    activationCenter.activator
-                    .resolve('fromFileExecutionConfigurationProvider');
+    activator.resolve('fromFileExecutionConfigurationProvider');
 const executionConfigurationMergingService: ExecutionConfigurationMergingService = 
-    activationCenter.activator
-                    .resolve('executionConfigurationMergingService');
-
+    activator.resolve('executionConfigurationMergingService');
                     
 const cliExecutionConfiguration: ExecutionConfiguration = 
     cliExecutionConfigurationParsingService.parse(process.argv);
 const fromFileExecutionConfiguration : ExecutionConfiguration = 
-    fromFileExecutionConfigurationProvider.getFileExecutionConfigration(
-        cliExecutionConfiguration.cofigurationFile || './continui.json' // TODO: Fix this magic str
+    fromFileExecutionConfigurationProvider.getExecutionConfigrationFromFile(
+        cliExecutionConfiguration.cofigurationFile,
     );
 const executionConfiguration: ExecutionConfiguration = 
     executionConfigurationMergingService.mergeExecutionConfigurations(fromFileExecutionConfiguration,
                                                                       cliExecutionConfiguration);
 
-executionConfiguration.cofigurationFile = 'ignore-file-configuration'; // TODO: Fix this magic str
+executionConfiguration.cofigurationFile = 'ignore-file-configuration';
 
 const requestedCliRenderers = cliRenderers.filter(cliRenderer => {
-    let isRendererKeyRequested: boolean = false;
+  let isRendererKeyRequested: boolean = false;
 
-    cliRenderer.keys.forEach(cliRedererKey => {
-        isRendererKeyRequested = isRendererKeyRequested ||
+  cliRenderer.keys.forEach(cliRedererKey => {
+    isRendererKeyRequested = isRendererKeyRequested ||
                                 (process.argv.indexOf('-' + cliRedererKey) >= 0 ||
-                                 process.argv.indexOf('--' + cliRedererKey) >= 0)
-    });
+                                 process.argv.indexOf('--' + cliRedererKey) >= 0);
+  });
 
-    return isRendererKeyRequested;
+  return isRendererKeyRequested;
 });
 
-requestedCliRenderers.forEach(cliRenderer => cliRenderer.render(executionConfiguration) )
+requestedCliRenderers.forEach(cliRenderer => cliRenderer.render(executionConfiguration));
 
 if (!requestedCliRenderers.length) {
-    continuiApplicationFactory.createsContinuiApplication(executionConfiguration)
-                              .execute();
+  continuiApplicationFactory.createsContinuiApplication()
+                              .execute(executionConfiguration);
 }
+
+// [
+//       {
+//         key: 'help',
+//         type: StepOptionTypes.boolean,
+//         description: '(-h) Make the tool display the help, if steps are provided, the steps ' +
+//                      'help will be displayed.',
+//       },
+//       {
+//         key: 'version',
+//         type: StepOptionTypes.boolean,
+//         description: '(-v) Make the tool display the version.',
+//       },
+//       {
+//         key: 'steps',
+//         type: StepOptionTypes.boolean,
+//         description: '(-s) Make the tool display the available steps.',
+//       },
+//     ];
+
+
+// scope.loggingService.log(`Executing step ${step.identifier}(${step.name}) with options.`,
+//                                ...toDisplayOptions);
+// const toDisplayOptions = Object.keys(stepOpionsMap).map((optionKey) => { 
+//     const optionValue: string = stepOpionsMap[optionKey] !== undefined ? 
+//                                                             stepOpionsMap[optionKey] :
+//                                                             '[undefined]';
+//     return `${optionKey}=${optionValue}`;
+//   });

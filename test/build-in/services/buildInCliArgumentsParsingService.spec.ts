@@ -1,37 +1,34 @@
 import * as assert from 'assert';
-import {
-  CliArgumentsParsingService,
-} from '../../../src/domain/services/cliArgumentsParsingService';
-import {
-  BuildInCliArgumentsParsingService,
-} from '../../../src/build-in/services/buildInCliArgumentsParsingService';
+
 import { IdentifiedStepOptionMaps } from 'continui-step';
+import { CliExecutionConfigurationParsingService } from '../../../src/domain/cli/cliExecutionConfigurationParsingService';
+import { BuildInCliExecutionConfigurationParsingService } from '../../../src/build-in/cli/buildIncliExecutionConfigurationParsingService';
+import { ExecutionConfiguration } from '../../../src/domain/models/executionConfiguration';
 
 describe('The Build In Cli Arguments Parsing Service', () => {
-  it('Should parse and argument array into a identified step option map', () => {
-    const cliArgumentsParsingService: CliArgumentsParsingService = 
-        new BuildInCliArgumentsParsingService();
+  it('Should parse and argument array into a execution configuration', () => {
+    const cliArgumentsParsingService: CliExecutionConfigurationParsingService = 
+        new BuildInCliExecutionConfigurationParsingService();
         
-    const identifiedStepOptionMaps: IdentifiedStepOptionMaps =  
+    const executionConfiguration: ExecutionConfiguration =  
         cliArgumentsParsingService.parse(['executor',
           'application',
-          'step',
-          '--step.param1',
+          'testStep',
+          '--testStep.param1',
           'value1',
-          '--step.param2',
+          '--testStep.param2',
           'value2',
-          'paramerlessStep']);
-
-    assert.ok(identifiedStepOptionMaps.main, 'The parser doesn\'t create the main step');
-    assert.ok(identifiedStepOptionMaps.main.steps instanceof Array,
+          'testParamerlessStep']);
+    
+    assert.ok(executionConfiguration.steps instanceof Array,
               'The steps option in main step must be an array');
-    assert.ok(identifiedStepOptionMaps.main.steps.indexOf('step') >= 0,
+    assert.ok(executionConfiguration.steps.indexOf('testStep') >= 0,
               'Can not find the step {step} in the step collection');
-    assert.ok(identifiedStepOptionMaps.main.steps.indexOf('paramerlessStep') >= 0,
+    assert.ok(executionConfiguration.steps.indexOf('testParamerlessStep') >= 0,
               'Can not find the step {step} in the step collection');
-    assert.ok(identifiedStepOptionMaps.step,
-              'Can not find the option for the step {step}');
-    assert.equal(identifiedStepOptionMaps.step.param1, 'value1');
-    assert.equal(identifiedStepOptionMaps.step.param2, 'value2');
+    assert.ok(executionConfiguration.stepsOptionsValues.testStep,
+              'Can not find the option for the step {testStep}');
+    assert.equal(executionConfiguration.stepsOptionsValues.testStep.param1, 'value1');
+    assert.equal(executionConfiguration.stepsOptionsValues.testStep.param2, 'value2');
   });
 });

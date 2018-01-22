@@ -1,10 +1,9 @@
 import { Step, StepOption } from 'continui-step';
-import { HelpGenerationService } from '../../domain/services/helpGenerationService';
 
 /**
  * Represents a service that generate help.
  */
-export class BuildInHelpGenerationService implements HelpGenerationService {
+export class BuildInHelpGenerationService {
     /**
      * Returns help generated based on the provided steps and his options.
      * @param steps Represenst the steps.

@@ -21,7 +21,7 @@ export class BuildInCliExecutionConfigurationParsingService
       steps: minimistParsedArguments._,
       stepsDeinitionsModules: minimistParsedArguments.stepDefinitionModule,
       stepsOptionsValues: this.getStepsOptionsValuesFromParsedArguments(minimistParsedArguments),
-      cofigurationFile: minimistParsedArguments.cofigurationFile
+      cofigurationFile: minimistParsedArguments.cofigurationFile,
     };
   }
 

@@ -3,30 +3,37 @@ import { Step,
          StepOption,
          StepOptionTypes,
          StepOptionValueMap,
-         IdentifiedStepOptionMaps } from 'continui-step';
-import { LoggingService, LoggingDataColorTypes, TextSecureService } from 'continui-services';
-import { error } from 'util';
-import { fail } from 'assert';
-import { HelpGenerationService } from '../domain/services/helpGenerationService';
-import { CliArgumentsParsingService } from '../domain/services/cliArgumentsParsingService';
-import { StepFactory } from '../domain/stepFactory';
-import { ActivationCenter } from '../domain/activationCenter';
-
-import * as fs from 'fs';
-import * as path from 'path';
-import * as deepmerge from 'deepmerge';
+         IdentifiedStepOptionMaps,
+} from 'continui-step';
+import {
+  LoggingService,
+  LoggingDataColorTypes,
+  TextSecureService,
+} from 'continui-services';
+import { ExecutionConfiguration } from '../domain/models/executionConfiguration';
+import { StepProvider } from '../domain/providers/stepsProvider';
+import {
+  FromFileExecutionConfigurationProvider,
+} from '../domain/providers/fromFileExecutionConfigurationProvider';
+import {
+  ExecutionConfigurationMergingService,
+} from '../domain/services/executionConfigurationMergingService';
 
 import co from 'co';
 
+type StepExecutionContext = { 
+  step: Step<any>,
+  stepOptionValueMap: StepOptionValueMap,
+  stepContext: any, 
+};
+
 const privateScope: WeakMap<BuildInContinuiApplication, {
   steps: Step<any>[]
-  activationCenter: ActivationCenter,
-  stepFactory: StepFactory,
+  stepsProvider: StepProvider
   textSecureService: TextSecureService
-  loggingService: LoggingService
-  helpGenerationService: HelpGenerationService,  
-  defaultIdentifiedStepOptionMaps: IdentifiedStepOptionMaps
-  combinedIdentifiedStepOptionMaps: IdentifiedStepOptionMaps,
+  loggingService: LoggingService  
+  fromFileExecutionConfigurationProvider: FromFileExecutionConfigurationProvider
+  executionConfigurationMergingService: ExecutionConfigurationMergingService,
 }> = new WeakMap();
 
 /**
@@ -35,266 +42,191 @@ const privateScope: WeakMap<BuildInContinuiApplication, {
 export class BuildInContinuiApplication implements ContinuiApplication {
 
   constructor(
-    activationCenter: ActivationCenter,
-    stepFactory: StepFactory,
     textSecureService: TextSecureService,
-    loggingService: LoggingService,
-    helpGenerationService: HelpGenerationService) {
+    stepsProvider: StepProvider,
+    fromFileExecutionConfigurationProvider: FromFileExecutionConfigurationProvider,
+    executionConfigurationMergingService: ExecutionConfigurationMergingService) {
 
     privateScope.set(this, {
-      activationCenter,
-      stepFactory,         
+      steps: [],
+      stepsProvider,
       textSecureService,
-      loggingService,
-      helpGenerationService,
-      steps: [],        
-      defaultIdentifiedStepOptionMaps: {},
-      combinedIdentifiedStepOptionMaps: {},     
+      loggingService: null,
+      fromFileExecutionConfigurationProvider,
+      executionConfigurationMergingService,
     });
   }
 
-  /**
-   * Execute the continui application and required steps base on th provided options. 
-   * @param identifiedStepOptionMaps Represents the steps options.
-   */
-  public execute(identifiedStepOptionMaps: IdentifiedStepOptionMaps): void {
+   /**
+    * Execute the continui loaded application.
+    * @param executionConfiguration Represents the execution configuration for the application.
+    */
+  public execute(executionConfiguration: ExecutionConfiguration): void {
+    const scope = privateScope.get(this); 
+    const stepExecutionContexts: StepExecutionContext[] = [];
+
+    let mergedExecutionConfiguration: ExecutionConfiguration = executionConfiguration;
+
+    // TODO: Fix this magic str
+    if (executionConfiguration.cofigurationFile != 'ignore-file-configuration') { 
+      mergedExecutionConfiguration = this.getMergedExecutionConfiguration(executionConfiguration);
+    }
+
+    if (!mergedExecutionConfiguration.steps.length) {
+      throw new Error('Must provided at least one step to run. eg. [continui mystep1 ' +
+                      '--mystep1.param1 "param1value" mystep2]');
+    }
+
+    if (mergedExecutionConfiguration.stepsDeinitionsModules &&
+        mergedExecutionConfiguration.stepsDeinitionsModules.length) {
+      this.loadSteps(
+        ...scope.stepsProvider
+                .getStepsFromStepModules(mergedExecutionConfiguration.stepsDeinitionsModules),
+      );
+    }
+
+    this.registerSensitiveText(mergedExecutionConfiguration.stepsOptionsValues);
+    this.validateIdentifiersExistence(mergedExecutionConfiguration.steps);
+    this.validateRequiredOptionProvision(mergedExecutionConfiguration);
+
+    scope.loggingService.log(`Start steps execution`);
+
     co(function* () {
-      const scope = privateScope.get(this);
-      const mainIdentifier: string = 'main';      
-
-      scope.combinedIdentifiedStepOptionMaps = 
-        deepmerge.all([this.getOptionsFromRootFile(), identifiedStepOptionMaps]);
-
-      const mainStepOptionMap: StepOptionValueMap = 
-        scope.combinedIdentifiedStepOptionMaps[mainIdentifier];
-
-      this.registerSensitiveText();
-
-      if (!mainStepOptionMap) {
-        throw new Error('Main step is missing, it looks that you are not using continui from ' +
-                        'CLI, so you must provide the main step parameters.');
-      }
-            
-      const providedStepsIdentifiers: string[] = mainStepOptionMap.steps || [];    
-            
-      if (providedStepsIdentifiers.length) {
-        if (mainStepOptionMap.stepModule) {
-          this.loadStepDefinitions(mainStepOptionMap.stepModule);
-        }
-
-        this.validateIdentifiersExistence(providedStepsIdentifiers);
-
-        scope.combinedIdentifiedStepOptionMaps = 
-         deepmerge.all([
-           scope.defaultIdentifiedStepOptionMaps,
-           scope.combinedIdentifiedStepOptionMaps,           
-         ]);
-      }
-
-      if (mainStepOptionMap.needsVersion) {            
-        this.displayVersion();
-        return;
-      }
-
-      if (mainStepOptionMap.needsHelp) {
-        this.displayHelp(providedStepsIdentifiers);
-        return;
-      }
-
-      if (mainStepOptionMap.needsSteps) {
-        this.displaySteps();
-        return;
-      }
-
-      if (!providedStepsIdentifiers.length) {
-        throw new Error('Must provided at least one step to run. eg. [continui mystep1 ' +
-                        '--mystep1.param1 "param1value" mystep2]');
-      } 
-
-      this.validateRequiredOptionProvision(providedStepsIdentifiers);
-
-      scope.loggingService.log(`Start steps execution`);
-
-      const executedStepContextMaps: { step: Step<any>,
-        stepOptionValueMap: StepOptionValueMap,
-        context: any, 
-      }[] = [];
-
-      for (let i = 0; i < providedStepsIdentifiers.length; i = i + 1) {
-        const stepIdentifier: string = providedStepsIdentifiers[i];
-
+      yield executionConfiguration.steps.map(stepIdentifier => {
+        const self: BuildInContinuiApplication = this;
         // I assume that the find function will always retrieve a step because his existence is
-        // previously validated by the validateStepIdentifiers function.
-        const step: Step<any> = this.getStep(stepIdentifier);
-        const stepOpionsMap: StepOptionValueMap = 
-          scope.combinedIdentifiedStepOptionMaps[stepIdentifier];
+        // previously validated by the validateIdentifiersExistence function.
+        const step: Step<any> = self.getStep(stepIdentifier);
+        const stepOpionsValueMap: StepOptionValueMap =
+          executionConfiguration.stepsOptionsValues[stepIdentifier] || {};
+        const stepExecutionContext: StepExecutionContext = {
+          step ,
+          stepOptionValueMap: stepOpionsValueMap,
+          stepContext: step.createsContextFromOptionsMap(stepOpionsValueMap),
+        };
+        
+        stepExecutionContexts.push(stepExecutionContext);
 
-        try {
-          const toDisplayOptions = Object.keys(stepOpionsMap).map((optionKey) => { 
-            const optionValue: string = stepOpionsMap[optionKey] !== undefined ? 
-                                                                    stepOpionsMap[optionKey] :
-                                                                    '[undefined]';
-            return `${optionKey}=${optionValue}`;
-          });
-          scope.loggingService.log(`Executing step ${step.identifier}(${step.name}) with options.`,
-                                   ...toDisplayOptions);
-                    
-          let context: any;
-
-          scope.loggingService.log('Starting the from options context creation for the step ' +
-                                   `${step.identifier}(${step.name})`);
-
-          context = step.createsContextFromOptionsMap(stepOpionsMap);
-
-          scope.loggingService.log('Starting the restauration point creation for the step ' +
-                                   `${step.identifier}(${step.name})`);
-          yield step.createsRestaurationPoint(stepOpionsMap, context) || [];
-
-          executedStepContextMaps.push({ step, context, stepOptionValueMap: stepOpionsMap  });
-
-          scope.loggingService.log(`Starting the step execution ${step.identifier}(${step.name})`);
-          yield step.execute(stepOpionsMap, context) || [];
-          scope.loggingService.log(`Step execution ${step.identifier}(${step.name}) ` +
-                                   'ended successfully');
-
-        } catch (error) {
-          scope.loggingService.log(`Restoring steps executions due error on step ` + 
-                                   `${step.identifier}(${step.name})` +
-                                   error.message || error);
-          yield this.restoreExecutedStep(executedStepContextMaps);
-          scope.loggingService.log(`Execution fail.`);
-                    
-          throw error;
-        }
-      }
-      scope.loggingService.log(`Execution done.`);     
+        return self.executeStep(stepExecutionContext);
+      }); 
+      
+      scope.loggingService.log(`Execution done.`);
     }.bind(this)).catch((error) => {
+
+      co(function* () {
+        const self: BuildInContinuiApplication = this;
+
+        scope.loggingService.log(`Restoring steps execution` + error.message || error);
+
+        self.restoreExecutedStep(stepExecutionContexts); 
+      }.bind(this));
+
       console.error('\n\n',error);
-      process.exit(1);
+      scope.loggingService.log(`Execution fail.`);
     });
   }
 
-  private loadSteps(...steps: Step<any>[]): void {        
+   /**
+     * Load the provided steps to his future execution.
+     * @param steps Represents the steps that will be executed.
+     */
+  public loadSteps(...steps: Step<any>[]): void {        
     const scope = privateScope.get(this);
-    steps.forEach((step) => {
 
+    steps.forEach((step) => {
       if (scope.steps.find(addedStep => step.identifier === addedStep.identifier)) {
         throw new Error(`There is already an step with the identifier ${step.identifier}`);
-      }
-
-      scope.defaultIdentifiedStepOptionMaps[step.identifier] = {};
-      step.options.forEach(option => 
-        scope.defaultIdentifiedStepOptionMaps[step.identifier][option.key] = option.defaultValue);
+      }      
 
       scope.steps.push(step);
     });    
   }
 
-  private getOptionsFromRootFile(): IdentifiedStepOptionMaps {
-    const filePath: string = path.resolve(__dirname, 'continui.json');
-    return fs.existsSync(filePath) ? require(filePath) : {};
+  /**
+   * Executed and step based on the provided step execution context.
+   * @param stepExecutionContext Represents the execution context of the step to be executed.
+   */
+  private* executeStep(stepExecutionContext: StepExecutionContext): IterableIterator<any> {
+    const scope = privateScope.get(this);
+    const step: Step<any> = stepExecutionContext.step;
+
+    scope.loggingService.log('Starting the from options context creation for the step ' +
+                              `${step.identifier}(${step.name})`);
+
+    scope.loggingService.log('Starting the restauration point creation for the step ' +
+                              `${step.identifier}(${step.name})`);
+    yield step.createsRestaurationPoint(stepExecutionContext.stepOptionValueMap, context) || [];
+
+    scope.loggingService.log(`Starting the step execution ${step.identifier}(${step.name})`);
+    yield step.execute(stepExecutionContext.stepOptionValueMap, context) || [];
+    scope.loggingService.log(`Step execution ${step.identifier}(${step.name}) ` +
+                              'ended successfully');
   }
 
-  private registerSensitiveText() {
+  /**
+   * Performs steps restorations based on the provided step execution contexts.
+   * @param stepExecutionContexts Represents the execution contexts to be restored.
+   */
+  private* restoreExecutedStep(stepExecutionContexts: StepExecutionContext[]):
+    IterableIterator<any> {              
+    const scope = privateScope.get(this);
+
+    yield stepExecutionContexts.map(stepExecutionContext => {
+      const step = stepExecutionContext.step;
+
+      try {
+        scope.loggingService.log(`Restoring step ${step.identifier}(${step.name})`);
+        return step.restore(stepExecutionContext.stepOptionValueMap, 
+                            stepExecutionContext.stepContext) || [];
+      } catch (error) {
+        scope.loggingService.log(`Error restoring step ${step.identifier}(${step.name}) ` + error);
+      } 
+    });
+  }
+
+  /**
+   * Return an step bases on the provided identifier.
+   * @param stepIdentifier Represents the step identifier to look for.
+   * @returns An Step.
+   */
+  private getStep(stepIdentifier: string): Step<any> {
+    const step: Step<any> = privateScope.get(this)
+                                        .steps
+                                        .find(step => step.identifier === stepIdentifier);
+
+    if (!step) {
+      throw new Error('There is not step with the provided step idenifier ' + stepIdentifier);
+    }
+
+    return step;
+  }  
+  
+  /**
+   * Register all secure values to be secured in any application output.
+   * @param identifiedStepOptionMaps Represents the step otion value map.
+   */
+  private registerSensitiveText(identifiedStepOptionMaps: IdentifiedStepOptionMaps): void {
     const scope = privateScope.get(this);
 
     scope.steps.forEach((step) => {
       step.options.forEach((option) => {
         if (option.isSecure) {
           scope.textSecureService.registerSensitiveText(
-            scope.combinedIdentifiedStepOptionMaps[step.identifier][option.key]);
+            identifiedStepOptionMaps[step.identifier][option.key],
+          );
         }
       });
     });
   }  
 
-  private displayVersion() {
+  /**
+   * Validates that all provided identifiers are loaded into the application.
+   * @param stepIdentifiers Represents the step identifiers to be validated.
+   */
+  private validateIdentifiersExistence(stepIdentifiers: string[]): void {
     const scope = privateScope.get(this);
     
-    scope.loggingService.log('Version requested');
-    scope.loggingService.log('continui version: 1.0.0'); // TODO: Must log the package version.
-  }
-
-  private displayHelp(providedStepsIdentifiers: string[]) {
-    const scope = privateScope.get(this);
-    const generatedHelp: string = providedStepsIdentifiers.length ? 
-                                        scope.helpGenerationService
-                                             .getStepsHelp(...scope.steps) :
-                                        scope.helpGenerationService
-                                             .getStepOptionsHelp(...this.getOptions());
-
-    scope.loggingService.log('Help requested \n\n Help \n\n' + generatedHelp);
-  }
-
-  private displaySteps() {
-    const scope = privateScope.get(this);
-
-    scope.loggingService
-         .log('Steps requested \n' +  
-               scope.steps.map(step => `${step.identifier}(${step.name})`).join(' '));
-  }
-
-
-
-  private getStep(stepIdentifier: string): Step<any> {
-    const scope = privateScope.get(this);
-
-    let toReturn: Step<any> = scope.steps.find(step => step.identifier === stepIdentifier);
-
-    if (!toReturn) {
-      toReturn = scope.stepFactory.createStep(stepIdentifier);
-      this.loadSteps(toReturn);
-    }
-    
-    return toReturn;
-  }    
-
-  private* restoreExecutedStep(executedStepContextMaps: { 
-    step: Step<any>,
-    stepOptionValueMap: StepOptionValueMap,
-    context: any,
-  }[]) : IterableIterator<any> {              
-    const scope = privateScope.get(this);
-
-    for (let i = executedStepContextMaps.length - 1; i >= 0; i = i - 1) {
-      const executedStepContextMap = executedStepContextMaps[i];
-      const step = executedStepContextMap.step;
-
-      try {
-        scope.loggingService.log(`Restoring step ${step.identifier}(${step.name})`);
-        yield step.restore(executedStepContextMap.stepOptionValueMap, 
-                           executedStepContextMap.context) || [];
-      } catch (error) {
-        scope.loggingService.log(`Error restoring step ${step.identifier}(${step.name}) ` + error);
-      }            
-    }
-        
-  }
-
-  private getOptions(): StepOption[] {
-    return [
-      {
-        key: 'help',
-        type: StepOptionTypes.boolean,
-        description: '(-h) Make the tool display the help, if steps are provided, the steps ' +
-                     'help will be displayed.',
-      },
-      {
-        key: 'version',
-        type: StepOptionTypes.boolean,
-        description: '(-v) Make the tool display the version.',
-      },
-      {
-        key: 'steps',
-        type: StepOptionTypes.boolean,
-        description: '(-s) Make the tool display the available steps.',
-      },
-    ];
-  }
-
-  private validateIdentifiersExistence(stepIdentifiers: string[]) {
-    const scope = privateScope.get(this);
-    const generalErrors: string[] = [];      
+    let existanceValiationErrorMessage: string = '';      
 
     scope.loggingService.log('Validating steps identifiers existence');
 
@@ -302,60 +234,71 @@ export class BuildInContinuiApplication implements ContinuiApplication {
       try {
         this.getStep(stepIdentifier);
       } catch (e) {
-        generalErrors.push(e.message || e);
+        existanceValiationErrorMessage += `identifier: ${stepIdentifier} -> ${e.message || e} \n`;
       }
     });
 
-    if (generalErrors.length) {
-      throw new Error('\n' + generalErrors.join('\n'));
+    if (existanceValiationErrorMessage) {
+      throw new Error(existanceValiationErrorMessage);
     }
   }
 
-  private validateRequiredOptionProvision(stepIdentifiers: string[]) {
+  /**
+   * Validates that all required options by the requested steps were provided.
+   * @param executionConfiguration Represetns the execution configuration.
+   */
+  private validateRequiredOptionProvision(executionConfiguration: ExecutionConfiguration): void {
     const scope = privateScope.get(this);
-    let errorMessage:string = '';
-    const stepErrorsMaps: {
-      step:Step<any>,
-      errors:string[],
-    }[] = [];       
+
+    let requiredOptiosErrorMessage: string = '';
         
     scope.loggingService.log('Validating steps required options provision');
         
-    stepIdentifiers.forEach((stepIdentifier) => {
-
-      let step: Step<any>;
-      let stepOptionMap: StepOptionValueMap;
-      const stepErrors: string[] = [];
-
-      step = this.getStep(stepIdentifier);
-      stepOptionMap = privateScope.get(this)
-                                  .combinedIdentifiedStepOptionMaps[step.identifier] || {};
+    executionConfiguration.steps.forEach((stepIdentifier) => {
+      const step: Step<any> = this.getStep(stepIdentifier);
+      const stepOptionMap: StepOptionValueMap = 
+        executionConfiguration.stepsOptionsValues[step.identifier] || {};
+      
+      let stepRequiredOptiosErrorMessage: string = '';
             
-      if (step && step.options) {
+      if (step.options) {
         step.options.filter(option => option.isRequired).forEach((option) => {
           if (!stepOptionMap[option.key] && stepOptionMap[option.key] !== 0) {
-            stepErrors.push(`The option --${step.identifier}.${option.key} was not provided and ` +
-                            'is required.');
+            stepRequiredOptiosErrorMessage += `The option --${step.identifier}.${option.key} was` +
+                                              ' not provided and is required. \n';
           }
         });   
       }
             
-      if (stepErrors.length) {
-        stepErrorsMaps.push({ step, errors: stepErrors });
+      if (stepRequiredOptiosErrorMessage) {
+        requiredOptiosErrorMessage += `Step [${step.identifier}](${step.name}) can not be ` +
+                                      'executed due:\n\n' + stepRequiredOptiosErrorMessage + '\n';
       }
     });
 
-    if (stepErrorsMaps.length) {
-      stepErrorsMaps.forEach((stepErrorMap) => {
-        errorMessage += `\nStep [${stepErrorMap.step.identifier}](${stepErrorMap.step.name}) ` + 
-                        'can not be executed due:\n\n';
-
-        stepErrorMap.errors.forEach(error => errorMessage += error + '\n');
-      });
+    if (requiredOptiosErrorMessage) {
+      throw new Error(requiredOptiosErrorMessage);
     }
+  }
 
-    if (errorMessage) {
-      throw new Error(errorMessage);
-    }
+  /**
+   * Returns the provided execution configuration merged with the file execution configuration.
+   * @param unmergedExecutionConfiguration Represents the provided execution configuration.
+   * @returns And execution configuration.
+   */
+  private getMergedExecutionConfiguration(unmergedExecutionConfiguration: ExecutionConfiguration):
+    ExecutionConfiguration {
+
+    const scope = privateScope.get(this); 
+    const fromFileExecutionConfiguration : ExecutionConfiguration =
+      scope.fromFileExecutionConfigurationProvider.getExecutionConfigrationFromFile(
+        unmergedExecutionConfiguration.cofigurationFile,
+      );
+    const mergedExecutionConfiguration: ExecutionConfiguration = 
+      scope.executionConfigurationMergingService
+           .mergeExecutionConfigurations(fromFileExecutionConfiguration,
+                                         unmergedExecutionConfiguration);
+
+    return mergedExecutionConfiguration;
   }
 }

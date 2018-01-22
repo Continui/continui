@@ -1,17 +1,15 @@
-import { BuildInLoggingService } from './services/buildInLoggingService';
-import { BuildInTextTemplateService } from './services/buildInTextTemplateService';
-import { BuildInCliArgumentsParsingService } from 
-  './services/buildInCliArgumentsParsingService';
-import { BuildInHelpGenerationService } from './services/buildInHelpGenerationService';
-import { BuildInTextSecureService } from './services/buildInTextSecureService';
+import { BuildInLoggingService } from './build-in/services/buildInLoggingService';
+import { BuildInTextTemplateService } from './build-in/services/buildInTextTemplateService';
+import { BuildInTextSecureService } from './build-in/services/buildInTextSecureService';
 import {
   StepActivationReference,
   StepActivationReferenceType,
   StepActivationReferenceMode,
 } from 'continui-step';
-import { BuildInTextTemplateContextProvider } from './services/buildInTextTemplateContextProvider';
-import { ActivationCenter } from '../domain/activationCenter';
-import { BuildInStepFactory } from './buildInStepFactory';
+import { BuildInTextTemplateContextProvider } from './build-in/services/buildInTextTemplateContextProvider';
+import { BuildInStepsProvider } from './build-in/providers/buildInStepsProvider';
+import { Activator } from './index';
+
 
 const buildInStepReferences: StepActivationReference[] = [{
   alias: 'loggingService', 
@@ -24,14 +22,8 @@ const buildInStepReferences: StepActivationReference[] = [{
   target: BuildInTextTemplateContextProvider,
   mode: StepActivationReferenceMode.singelton,
 },{
-  alias: 'cliArgumentsParsingService',
-  target:  BuildInCliArgumentsParsingService,
-},{
-  alias: 'helpGenerationService',
-  target:  BuildInHelpGenerationService,
-},{
-  alias: 'stepFactory',
-  target: BuildInStepFactory,
+  alias: 'stepsProvider',
+  target: BuildInStepsProvider,
 },{
   alias: 'textSecureService',
   target:  BuildInTextSecureService,
@@ -39,15 +31,14 @@ const buildInStepReferences: StepActivationReference[] = [{
 }];
 
 export class BuildInDependenciesRegistrar {
-  public registerBuilInReferencesIntoActivator(activationCenter: ActivationCenter) {
+  public registerBuilInReferencesIntoActivator(activator: Activator) {
     
-    activationCenter.activator.registerReference({
-      alias: 'activationCenter',       
-      target:  activationCenter,
+    activator.registerReference({
+      alias: 'activator',       
+      target:  activator,
       type: StepActivationReferenceType.constant,
     });
 
-    buildInStepReferences.forEach(reference => activationCenter.activator
-                                                               .registerReference(reference));
+    buildInStepReferences.forEach(reference => activator.registerReference(reference));
   }
 }
