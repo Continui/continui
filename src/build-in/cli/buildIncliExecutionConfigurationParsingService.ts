@@ -17,11 +17,14 @@ export class BuildInCliExecutionConfigurationParsingService
    * @returns An execution configuration.
    */
   public parse(cliArguments: any[]): ExecutionConfiguration {
-    const minimistParsedArguments = minimist(cliArguments.slice(2));   
+    const minimistParsedArguments = minimist(cliArguments.slice(2));
+    const stepDefinitionModules = minimistParsedArguments.stepDefinitionModule instanceof Array ?
+                                      minimistParsedArguments.stepDefinitionModule :
+                                      [minimistParsedArguments.stepDefinitionModule];   
 
     return {
       steps: minimistParsedArguments._,
-      stepsDeinitionsModules: minimistParsedArguments.stepDefinitionModule,
+      stepsDeinitionsModules: stepDefinitionModules,
       stepsOptionsValues: this.getStepsOptionsValuesFromParsedArguments(minimistParsedArguments),
       cofigurationFile: minimistParsedArguments.cofigurationFile,
     };

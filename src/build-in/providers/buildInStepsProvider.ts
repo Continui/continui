@@ -1,7 +1,8 @@
 import { Step, StepActivationDefinition } from 'continui-step';
 import { StepProvider } from '../../domain/providers/stepsProvider';
 import { Activator } from '../../domain/activator';
-import { connect } from 'http2';
+
+import * as path from 'path';
 
 const privateScope: WeakMap<BuildInStepsProvider, {
   stepsModulesMap: { [stepIentifier: string]: string },
@@ -33,7 +34,7 @@ export class BuildInStepsProvider implements StepProvider {
 
     stepModules.forEach((stepModule) => {
       if (scope.loadedModules.indexOf(stepModule) < 0) {
-        const moduleResult:any = require(stepModule);
+        const moduleResult:any = require(path.resolve(process.cwd(), stepModule));
         const stepActivationDefinition: StepActivationDefinition = moduleResult['default'] ||
                                                                    moduleResult;
 

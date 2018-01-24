@@ -43,6 +43,7 @@ export class BuildInContinuiApplication implements ContinuiApplication {
 
   constructor(
     textSecureService: TextSecureService,
+    loggingService: LoggingService,
     stepsProvider: StepProvider,
     fromFileExecutionConfigurationProvider: FromFileExecutionConfigurationProvider,
     executionConfigurationMergingService: ExecutionConfigurationMergingService) {
@@ -52,8 +53,8 @@ export class BuildInContinuiApplication implements ContinuiApplication {
       textSecureService,      
       fromFileExecutionConfigurationProvider,
       executionConfigurationMergingService,
+      loggingService,
       steps: [],
-      loggingService: null,
     });
   }
 
@@ -99,6 +100,10 @@ export class BuildInContinuiApplication implements ContinuiApplication {
         const step: Step<any> = self.getStep(stepIdentifier);
         const stepOpionsValueMap: StepOptionValueMap =
           executionConfiguration.stepsOptionsValues[stepIdentifier] || {};
+
+        scope.loggingService.log('Starting the options context creation for the step ' +
+                                 `${step.identifier}(${step.name})`);
+
         const stepExecutionContext: StepExecutionContext = {
           step ,
           stepOptionValueMap: stepOpionsValueMap,
@@ -116,7 +121,7 @@ export class BuildInContinuiApplication implements ContinuiApplication {
       co(function* () {
         const self: BuildInContinuiApplication = <BuildInContinuiApplication>this;
 
-        scope.loggingService.log(`Restoring steps execution` + error.message || error);
+        scope.loggingService.log(`Restoring steps execution due error: ` + error.message || error);
 
         self.restoreExecutedStep(stepExecutionContexts); 
       }.bind(this));
@@ -148,19 +153,18 @@ export class BuildInContinuiApplication implements ContinuiApplication {
    */
   private* executeStep(stepExecutionContext: StepExecutionContext): IterableIterator<any> {
     const scope = privateScope.get(this);
-    const step: Step<any> = stepExecutionContext.step;
-
-    scope.loggingService.log('Starting the from options context creation for the step ' +
-                              `${step.identifier}(${step.name})`);
+    const step: Step<any> = stepExecutionContext.step;   
 
     scope.loggingService.log('Starting the restauration point creation for the step ' +
                               `${step.identifier}(${step.name})`);
-    yield step.createsRestaurationPoint(stepExecutionContext.stepOptionValueMap, context) || [];
+    yield step.createsRestaurationPoint(stepExecutionContext.stepOptionValueMap,
+                                        stepExecutionContext.stepContext) || [];
 
     scope.loggingService.log(`Starting the step execution ${step.identifier}(${step.name})`);
-    yield step.execute(stepExecutionContext.stepOptionValueMap, context) || [];
+    yield step.execute(stepExecutionContext.stepOptionValueMap,
+                       stepExecutionContext.stepContext) || [];
     scope.loggingService.log(`Step execution ${step.identifier}(${step.name}) ` +
-                              'ended successfully');
+                             'ended successfully');
   }
 
   /**
@@ -262,12 +266,15 @@ export class BuildInContinuiApplication implements ContinuiApplication {
       let stepRequiredOptiosErrorMessage: string = '';
             
       if (step.options) {
-        step.options.filter(option => option.isRequired).forEach((option) => {
-          if (!stepOptionMap[option.key] && stepOptionMap[option.key] !== 0) {
-            stepRequiredOptiosErrorMessage += `The option --${step.identifier}.${option.key} was` +
-                                              ' not provided and is required. \n';
-          }
-        });   
+        step.options
+            .filter(option => option.isRequired && option.defaultValue === undefined)
+            .forEach((option) => {
+              
+              if (!stepOptionMap[option.key] && stepOptionMap[option.key] !== 0) {
+                stepRequiredOptiosErrorMessage += `The option --${step.identifier}.${option.key}` +
+                                      ' was not provided and is required. \n';
+              }
+            });   
       }
             
       if (stepRequiredOptiosErrorMessage) {
