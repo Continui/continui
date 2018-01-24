@@ -1,4 +1,6 @@
-import { FromFileExecutionConfigurationProvider } from '../../domain/providers/fromFileExecutionConfigurationProvider';
+import {
+  FromFileExecutionConfigurationProvider,
+} from '../../domain/providers/fromFileExecutionConfigurationProvider';
 import { ExecutionConfiguration } from '../../domain/models/executionConfiguration';
 
 import * as fs from 'fs';

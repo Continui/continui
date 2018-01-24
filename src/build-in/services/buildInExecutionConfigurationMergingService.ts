@@ -1,4 +1,6 @@
-import { ExecutionConfigurationMergingService } from '../../domain/services/executionConfigurationMergingService';
+import {
+    ExecutionConfigurationMergingService,
+} from '../../domain/services/executionConfigurationMergingService';
 import { ExecutionConfiguration } from '../../domain/models/executionConfiguration';
 
 import * as deepmerge from 'deepmerge';

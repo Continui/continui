@@ -1,4 +1,6 @@
-import { CliExecutionConfigurationParsingService } from '../../domain/cli/cliExecutionConfigurationParsingService';
+import {
+  CliExecutionConfigurationParsingService,
+} from '../../domain/cli/cliExecutionConfigurationParsingService';
 import { ExecutionConfiguration } from '../../domain/models/executionConfiguration';
 import { IdentifiedStepOptionMaps } from 'continui-step';
 

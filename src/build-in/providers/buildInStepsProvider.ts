@@ -16,9 +16,9 @@ export class BuildInStepsProvider implements StepProvider {
 
   constructor(activator: Activator) {
     privateScope.set(this, {
-      stepsModulesMap: {},
-      loadedModules: [],
       activator,
+      stepsModulesMap: {},
+      loadedModules: [],      
     });
   }
 
@@ -31,7 +31,7 @@ export class BuildInStepsProvider implements StepProvider {
 
     const scope = privateScope.get(this);
 
-    stepModules.forEach(stepModule => {
+    stepModules.forEach((stepModule) => {
       if (scope.loadedModules.indexOf(stepModule) < 0) {
         const moduleResult:any = require(stepModule);
         const stepActivationDefinition: StepActivationDefinition = moduleResult['default'] ||
@@ -45,7 +45,7 @@ export class BuildInStepsProvider implements StepProvider {
       }
     });
 
-    return stepModules.map(stepModule => {
+    return stepModules.map((stepModule) => {
       try {
         return scope.activator.resolveWithContext('step', stepModule);
       } catch (error) {
@@ -63,13 +63,13 @@ export class BuildInStepsProvider implements StepProvider {
                                            stepModule: string): void {
 
     if (!stepActivationDefinition.identifier) {
-      throw new Error(`The suplied step activation definition in module ${stepModule} doesn\'t have ` + 
-                        'the identifier.');
+      throw new Error(`The suplied step activation definition in module ${stepModule} doesn\'t ` +
+                      'have the identifier.');
     }
   
     if (!stepActivationDefinition.step) {
-      throw new Error(`The suplied step activation definition in module ${stepModule} with identifier` +
-                        ` ${stepActivationDefinition.identifier} doesn\'t have an step.`);
+      throw new Error(`The suplied step activation definition in module ${stepModule} with ` +
+                      `identifier ${stepActivationDefinition.identifier} doesn\'t have an step.`);
     }
   
     const loadedModuleWithStepIdentifier: string = 
@@ -77,8 +77,8 @@ export class BuildInStepsProvider implements StepProvider {
   
     if (loadedModuleWithStepIdentifier) {
       throw new Error('The suplied step activation definition identifier ' +
-                        `${stepActivationDefinition.identifier} in module ${stepModule} already exists` +
-                        `in module ${loadedModuleWithStepIdentifier}.`);
+                      `${stepActivationDefinition.identifier} in module ${stepModule} already ` +
+                      `exists in module ${loadedModuleWithStepIdentifier}.`);
     }
   }
   /**

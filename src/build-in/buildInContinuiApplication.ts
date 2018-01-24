@@ -47,13 +47,13 @@ export class BuildInContinuiApplication implements ContinuiApplication {
     fromFileExecutionConfigurationProvider: FromFileExecutionConfigurationProvider,
     executionConfigurationMergingService: ExecutionConfigurationMergingService) {
 
-    privateScope.set(this, {
-      steps: [],
+    privateScope.set(this, {      
       stepsProvider,
-      textSecureService,
-      loggingService: null,
+      textSecureService,      
       fromFileExecutionConfigurationProvider,
       executionConfigurationMergingService,
+      steps: [],
+      loggingService: null,
     });
   }
 
@@ -68,7 +68,7 @@ export class BuildInContinuiApplication implements ContinuiApplication {
     let mergedExecutionConfiguration: ExecutionConfiguration = executionConfiguration;
 
     // TODO: Fix this magic str
-    if (executionConfiguration.cofigurationFile != 'ignore-file-configuration') { 
+    if (executionConfiguration.cofigurationFile !== 'ignore-file-configuration') { 
       mergedExecutionConfiguration = this.getMergedExecutionConfiguration(executionConfiguration);
     }
 
@@ -92,8 +92,8 @@ export class BuildInContinuiApplication implements ContinuiApplication {
     scope.loggingService.log(`Start steps execution`);
 
     co(function* () {
-      yield executionConfiguration.steps.map(stepIdentifier => {
-        const self: BuildInContinuiApplication = this;
+      yield executionConfiguration.steps.map((stepIdentifier) => {
+        const self: BuildInContinuiApplication = <BuildInContinuiApplication>this;
         // I assume that the find function will always retrieve a step because his existence is
         // previously validated by the validateIdentifiersExistence function.
         const step: Step<any> = self.getStep(stepIdentifier);
@@ -114,7 +114,7 @@ export class BuildInContinuiApplication implements ContinuiApplication {
     }.bind(this)).catch((error) => {
 
       co(function* () {
-        const self: BuildInContinuiApplication = this;
+        const self: BuildInContinuiApplication = <BuildInContinuiApplication>this;
 
         scope.loggingService.log(`Restoring steps execution` + error.message || error);
 
@@ -171,7 +171,7 @@ export class BuildInContinuiApplication implements ContinuiApplication {
     IterableIterator<any> {              
     const scope = privateScope.get(this);
 
-    yield stepExecutionContexts.map(stepExecutionContext => {
+    yield stepExecutionContexts.map((stepExecutionContext) => {
       const step = stepExecutionContext.step;
 
       try {

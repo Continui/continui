@@ -30,18 +30,20 @@ const fromFileExecutionConfiguration : ExecutionConfiguration =
         cliExecutionConfiguration.cofigurationFile,
     );
 const executionConfiguration: ExecutionConfiguration = 
-    executionConfigurationMergingService.mergeExecutionConfigurations(fromFileExecutionConfiguration,
-                                                                      cliExecutionConfiguration);
+    executionConfigurationMergingService.mergeExecutionConfigurations(
+        fromFileExecutionConfiguration,
+        cliExecutionConfiguration,
+    );
 
 executionConfiguration.cofigurationFile = 'ignore-file-configuration';
 
-const requestedCliRenderers = cliRenderers.filter(cliRenderer => {
+const requestedCliRenderers = cliRenderers.filter((cliRenderer) => {
   let isRendererKeyRequested: boolean = false;
 
-  cliRenderer.keys.forEach(cliRedererKey => {
+  cliRenderer.keys.forEach((cliRedererKey) => {
     isRendererKeyRequested = isRendererKeyRequested ||
-                                (process.argv.indexOf('-' + cliRedererKey) >= 0 ||
-                                 process.argv.indexOf('--' + cliRedererKey) >= 0);
+                            (process.argv.indexOf('-' + cliRedererKey) >= 0 ||
+                             process.argv.indexOf('--' + cliRedererKey) >= 0);
   });
 
   return isRendererKeyRequested;

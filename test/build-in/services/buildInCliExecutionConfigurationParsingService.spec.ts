@@ -1,8 +1,12 @@
 import * as assert from 'assert';
 
 import { IdentifiedStepOptionMaps } from 'continui-step';
-import { CliExecutionConfigurationParsingService } from '../../../src/domain/cli/cliExecutionConfigurationParsingService';
-import { BuildInCliExecutionConfigurationParsingService } from '../../../src/build-in/cli/buildIncliExecutionConfigurationParsingService';
+import {
+  CliExecutionConfigurationParsingService,
+} from '../../../src/domain/cli/cliExecutionConfigurationParsingService';
+import {
+  BuildInCliExecutionConfigurationParsingService,
+} from '../../../src/build-in/cli/buildIncliExecutionConfigurationParsingService';
 import { ExecutionConfiguration } from '../../../src/domain/models/executionConfiguration';
 
 describe('The Build In Cli Arguments Parsing Service', () => {
