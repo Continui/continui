@@ -20,8 +20,9 @@ export class BuildInTextTemplateService implements TextTemplateService {
      * @returns A parsed text template.
      */
   public parse(textTemplate: string): string {
-    return ejs.render(textTemplate, privateScope.get(this)
-                                                .textTemplateContextProvider
-                                                .getTextTemplateContext());
+    return !textTemplate ? textTemplate : ejs.render(textTemplate, 
+                                                     privateScope.get(this)
+                                                                 .textTemplateContextProvider
+                                                                 .getTextTemplateContext());
   }
 }
