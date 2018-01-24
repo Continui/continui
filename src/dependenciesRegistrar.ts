@@ -20,6 +20,7 @@ import {
 import {
   BuildInCliExecutionConfigurationParsingService,
 } from './build-in/cli/buildIncliExecutionConfigurationParsingService';
+import { HelpCliRenderer } from './build-in/cli/rederers/helpCliRenderer';
 
 
 export class BuildInDependenciesRegistrar {
@@ -70,6 +71,9 @@ export class BuildInDependenciesRegistrar {
     activator.registerReference({
       alias: 'cliExecutionConfigurationParsingService',
       target: BuildInCliExecutionConfigurationParsingService,
+    }).registerReference({
+      alias: 'cliRenderer',
+      target: HelpCliRenderer,
     });
   }
 }

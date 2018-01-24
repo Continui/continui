@@ -15,7 +15,7 @@ import {
 import { connect } from 'http2';
 import { date } from '../../continui-step/dist/definitions/stepOptionType';
 
-const cliRenderers: CliRenderers[] = activator.resolve('cliRenderers');
+const cliRenderers: CliRenderers[] = activator.resolve('cliRendererList');
 const cliExecutionConfigurationParsingService: CliExecutionConfigurationParsingService =
     activator.resolve('cliExecutionConfigurationParsingService');
 const fromFileExecutionConfigurationProvider: FromFileExecutionConfigurationProvider =
