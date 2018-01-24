@@ -1,4 +1,5 @@
 import { TextTemplateContextProvider, TextTemplateContext } from 'continui-services';
+import * as path from 'path';
 
 const privateScope: WeakMap<BuildInTextTemplateContextProvider, {
   context: any,
@@ -9,6 +10,12 @@ const privateScope: WeakMap<BuildInTextTemplateContextProvider, {
  */
 export class BuildInTextTemplateContextProvider implements TextTemplateContextProvider {
 
+  constructor() {
+    privateScope.set(this, {
+      context: null,
+    });
+  }
+
     /**
      * Returns the text template context.
      */
@@ -16,9 +23,13 @@ export class BuildInTextTemplateContextProvider implements TextTemplateContextPr
     const scope = privateScope.get(this);
 
     if (!scope.context) {
-      scope.context = require('./pakage.json');
-    }
+      scope.context = require(path.resolve(process.cwd(), './package.json'));
 
+      if (!scope.context) {
+        throw new Error('The template context to be provided is invalid.');
+      }
+    }
+    
     return scope.context;
   }
 }
