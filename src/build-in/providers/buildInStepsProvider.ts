@@ -1,5 +1,5 @@
 import { Step, StepActivationDefinition } from 'continui-step';
-import { StepProvider } from '../../domain/providers/stepsProvider';
+import { StepsProvider } from '../../domain/providers/stepsProvider';
 import { Activator } from '../../domain/activator';
 
 import * as path from 'path';
@@ -13,7 +13,7 @@ const privateScope: WeakMap<BuildInStepsProvider, {
 /**
  * Represents a provider that provides the available steps based on diferent criterias.
  */
-export class BuildInStepsProvider implements StepProvider {
+export class BuildInStepsProvider implements StepsProvider {
 
   constructor(activator: Activator) {
     privateScope.set(this, {

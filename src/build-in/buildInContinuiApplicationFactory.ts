@@ -2,7 +2,6 @@ import { ContinuiApplicationFactory } from '../domain/continuiApplicationFactory
 import { ContinuiApplication } from '../domain/continuiApplication';
 import { BuildInContinuiApplication } from './buildInContinuiApplication';
 import { ExecutionConfiguration } from '../domain/models/executionConfiguration';
-import { StepProvider } from '../domain/providers/stepsProvider';
 import {
   FromFileExecutionConfigurationProvider,
 } from '../domain/providers/fromFileExecutionConfigurationProvider';

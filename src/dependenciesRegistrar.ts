@@ -21,6 +21,8 @@ import {
   BuildInCliExecutionConfigurationParsingService,
 } from './build-in/cli/buildIncliExecutionConfigurationParsingService';
 import { HelpCliRenderer } from './build-in/cli/rederers/helpCliRenderer';
+import { VersionCliRenderer } from './build-in/cli/rederers/versionCliRenderer';
+import { StepsCliRenderer } from './build-in/cli/rederers/stepsCliRenderer';
 
 
 export class BuildInDependenciesRegistrar {
@@ -64,6 +66,7 @@ export class BuildInDependenciesRegistrar {
     }).registerReference({
       alias: 'stepsProvider',
       target: BuildInStepsProvider,
+      mode: StepActivationReferenceMode.singelton,
     });
   }
 
@@ -74,6 +77,12 @@ export class BuildInDependenciesRegistrar {
     }).registerReference({
       alias: 'cliRenderer',
       target: HelpCliRenderer,
+    }).registerReference({
+      alias: 'cliRenderer',
+      target: VersionCliRenderer,
+    }).registerReference({
+      alias: 'cliRenderer',
+      target: StepsCliRenderer,
     });
   }
 }

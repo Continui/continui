@@ -76,32 +76,3 @@ function cliExecution(
 }
 
 activator.resolve(cliExecution);
-
-// [
-//       {
-//         key: 'help',
-//         type: StepOptionTypes.boolean,
-//         description: '(-h) Make the tool display the help, if steps are provided, the steps ' +
-//                      'help will be displayed.',
-//       },
-//       {
-//         key: 'version',
-//         type: StepOptionTypes.boolean,
-//         description: '(-v) Make the tool display the version.',
-//       },
-//       {
-//         key: 'steps',
-//         type: StepOptionTypes.boolean,
-//         description: '(-s) Make the tool display the available steps.',
-//       },
-//     ];
-
-
-// scope.loggingService.log(`Executing step ${step.identifier}(${step.name}) with options.`,
-//                                ...toDisplayOptions);
-// const toDisplayOptions = Object.keys(stepOpionsMap).map((optionKey) => { 
-//     const optionValue: string = stepOpionsMap[optionKey] !== undefined ? 
-//                                                             stepOpionsMap[optionKey] :
-//                                                             '[undefined]';
-//     return `${optionKey}=${optionValue}`;
-//   });

@@ -3,7 +3,7 @@ import { Step } from 'continui-step';
 /**
  * Represents a provider that provides the available steps based on diferent criterias.
  */
-export interface StepProvider {
+export interface StepsProvider {
 
     /**
      * Return a list of steps based on the provided step modules.

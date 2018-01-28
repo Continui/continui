@@ -20,7 +20,8 @@ export class BuildInCliExecutionConfigurationParsingService
     const minimistParsedArguments = minimist(cliArguments.slice(2));
     const stepDefinitionModules = minimistParsedArguments.stepDefinitionModule instanceof Array ?
                                       minimistParsedArguments.stepDefinitionModule :
-                                      [minimistParsedArguments.stepDefinitionModule];   
+                                      minimistParsedArguments.stepDefinitionModule ? 
+                                        [minimistParsedArguments.stepDefinitionModule] : [];   
 
     return {
       steps: minimistParsedArguments._,
