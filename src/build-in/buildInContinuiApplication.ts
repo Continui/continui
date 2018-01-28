@@ -94,6 +94,7 @@ export class BuildInContinuiApplication extends ContinuiApplication {
             ...scope.stepsProvider
                     .getStepsFromStepModules(mergedExecutionConfiguration.stepsDeinitionsModules),
           );
+      this.loadDefaultStepValuesInExecutionContext(mergedExecutionConfiguration);
 
       this.emitProgressChanged(20, `steps definitions modules loaded`);
     }
@@ -112,14 +113,14 @@ export class BuildInContinuiApplication extends ContinuiApplication {
     co(function* () {
       const self: BuildInContinuiApplication = <BuildInContinuiApplication>this;
 
-      yield executionConfiguration.steps.map((stepIdentifier, index) => {        
+      yield mergedExecutionConfiguration.steps.map((stepIdentifier, index) => {        
         // I assume that the find function will always retrieve a step because his existence is
         // previously validated by the validateIdentifiersExistence function.
         const step: Step<any> = self.getStep(stepIdentifier);
         const stepOpionsValueMap: StepOptionValueMap =
-          executionConfiguration.stepsOptionsValues[stepIdentifier] || {};        
+          mergedExecutionConfiguration.stepsOptionsValues[stepIdentifier] || {};        
         const stepProgressRepresentation: number = 
-          50 + ((50 / executionConfiguration.steps.length) * index);
+          50 + ((50 / mergedExecutionConfiguration.steps.length) * index);
 
         self.emitProgressChanged(stepProgressRepresentation,
                                  `Working with ${step.identifier}(${step.name})`);
@@ -164,6 +165,27 @@ export class BuildInContinuiApplication extends ContinuiApplication {
 
       scope.steps.push(step);
     });    
+  }
+
+  /**
+   * Loads default values into the provided execution configuration.
+   * @param executionConfiguration Represents the execution configuration.
+   */
+  private loadDefaultStepValuesInExecutionContext(executionConfiguration: ExecutionConfiguration):
+    void {
+    privateScope.get(this).steps.forEach((step) => {
+      step.options
+            .filter(option => option.defaultValue !== undefined)
+            .forEach((option) => {
+
+              const steOptionValueMap: StepOptionValueMap =
+                executionConfiguration.stepsOptionsValues[step.identifier];
+
+              if (steOptionValueMap[option.key] === undefined) {
+                steOptionValueMap[option.key] = option.defaultValue;
+              }                
+            });
+    });
   }
 
   /**
