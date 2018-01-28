@@ -18,8 +18,11 @@ import {
 import {
   ExecutionConfigurationMergingService,
 } from '../domain/services/executionConfigurationMergingService';
+import { ExecutionProgressInformation } from '../domain/models/executionProgressInformation';
 
 import co from 'co';
+
+import * as continuiApplicationEvents from '../domain/constants/continuiApplicationEvents';
 
 type StepExecutionContext = { 
   step: Step<any>,
@@ -31,7 +34,6 @@ const privateScope: WeakMap<BuildInContinuiApplication, {
   steps: Step<any>[]
   stepsProvider: StepProvider
   textSecureService: TextSecureService
-  loggingService: LoggingService  
   fromFileExecutionConfigurationProvider: FromFileExecutionConfigurationProvider
   executionConfigurationMergingService: ExecutionConfigurationMergingService,
 }> = new WeakMap();
@@ -39,21 +41,21 @@ const privateScope: WeakMap<BuildInContinuiApplication, {
 /**
  * Represents a continui application.
  */
-export class BuildInContinuiApplication implements ContinuiApplication {
+export class BuildInContinuiApplication extends ContinuiApplication {
 
   constructor(
-    textSecureService: TextSecureService,
-    loggingService: LoggingService,
     stepsProvider: StepProvider,
+    textSecureService: TextSecureService,    
     fromFileExecutionConfigurationProvider: FromFileExecutionConfigurationProvider,
     executionConfigurationMergingService: ExecutionConfigurationMergingService) {
+
+    super();
 
     privateScope.set(this, {      
       stepsProvider,
       textSecureService,      
       fromFileExecutionConfigurationProvider,
       executionConfigurationMergingService,
-      loggingService,
       steps: [],
     });
   }
@@ -78,31 +80,49 @@ export class BuildInContinuiApplication implements ContinuiApplication {
                       '--mystep1.param1 "param1value" mystep2]');
     }
 
+    this.emitProgressChanged(0, `Starting execution`);
+
     if (mergedExecutionConfiguration.stepsDeinitionsModules &&
         mergedExecutionConfiguration.stepsDeinitionsModules.length) {
+
+      const modulesToLoadCount = 
+            mergedExecutionConfiguration.stepsDeinitionsModules.length;
+
+      this.emitProgressChanged(10, `Loading ${modulesToLoadCount} steps definitions modules`);
+
       this.loadSteps(
-        ...scope.stepsProvider
-                .getStepsFromStepModules(mergedExecutionConfiguration.stepsDeinitionsModules),
-      );
+            ...scope.stepsProvider
+                    .getStepsFromStepModules(mergedExecutionConfiguration.stepsDeinitionsModules),
+          );
+
+      this.emitProgressChanged(20, `steps definitions modules loaded`);
     }
 
+    this.emitProgressChanged(30, `${scope.steps.length} steps recognized`);
+
+    this.emitProgressChanged(35, `Registering sensitive data for secure outputs.`);
     this.registerSensitiveText(mergedExecutionConfiguration.stepsOptionsValues);
+
+    this.emitProgressChanged(40, `Validating required steps existance`);
     this.validateIdentifiersExistence(mergedExecutionConfiguration.steps);
+
+    this.emitProgressChanged(45, `Validating required options provision`);
     this.validateRequiredOptionProvision(mergedExecutionConfiguration);
 
-    scope.loggingService.log(`Start steps execution`);
-
     co(function* () {
-      yield executionConfiguration.steps.map((stepIdentifier) => {
-        const self: BuildInContinuiApplication = <BuildInContinuiApplication>this;
+      const self: BuildInContinuiApplication = <BuildInContinuiApplication>this;
+
+      yield executionConfiguration.steps.map((stepIdentifier, index) => {        
         // I assume that the find function will always retrieve a step because his existence is
         // previously validated by the validateIdentifiersExistence function.
         const step: Step<any> = self.getStep(stepIdentifier);
         const stepOpionsValueMap: StepOptionValueMap =
-          executionConfiguration.stepsOptionsValues[stepIdentifier] || {};
+          executionConfiguration.stepsOptionsValues[stepIdentifier] || {};        
+        const stepProgressRepresentation: number = 
+          50 + ((50 / executionConfiguration.steps.length) * index);
 
-        scope.loggingService.log('Starting the options context creation for the step ' +
-                                 `${step.identifier}(${step.name})`);
+        self.emitProgressChanged(stepProgressRepresentation,
+                                 `Working with ${step.identifier}(${step.name})`);
 
         const stepExecutionContext: StepExecutionContext = {
           step ,
@@ -115,19 +135,18 @@ export class BuildInContinuiApplication implements ContinuiApplication {
         return self.executeStep(stepExecutionContext);
       }); 
       
-      scope.loggingService.log(`Execution done.`);
+      self.emitProgressChanged(100, `Execution done.`);
     }.bind(this)).catch((error) => {
-
+      console.error(error);
+      
       co(function* () {
         const self: BuildInContinuiApplication = <BuildInContinuiApplication>this;
 
-        scope.loggingService.log(`Restoring steps execution due error: ` + error.message || error);
-
-        self.restoreExecutedStep(stepExecutionContexts); 
+        self.emitInformationAvailable(`Restoring steps execution due error: ` + error);
+        yield self.restoreExecutedStep(stepExecutionContexts); 
       }.bind(this));
-
-      console.error('\n\n',error);
-      scope.loggingService.log(`Execution fail.`);
+      
+      this.emitProgressChanged(0, `Execution fail.`);
     });
   }
 
@@ -153,18 +172,20 @@ export class BuildInContinuiApplication implements ContinuiApplication {
    */
   private* executeStep(stepExecutionContext: StepExecutionContext): IterableIterator<any> {
     const scope = privateScope.get(this);
-    const step: Step<any> = stepExecutionContext.step;   
+    const step: Step<any> = stepExecutionContext.step;
 
-    scope.loggingService.log('Starting the restauration point creation for the step ' +
-                              `${step.identifier}(${step.name})`);
+    this.emitInformationAvailable('Starting the restauration point creation for the step ' +
+                                   `${step.identifier}(${step.name})`);
     yield step.createsRestaurationPoint(stepExecutionContext.stepOptionValueMap,
                                         stepExecutionContext.stepContext) || [];
+    this.emitInformationAvailable('Restauration point creation ended for the step ' +
+                                   `${step.identifier}(${step.name})`);
 
-    scope.loggingService.log(`Starting the step execution ${step.identifier}(${step.name})`);
+    this.emitInformationAvailable(`Starting the step execution ${step.identifier}(${step.name})`);
     yield step.execute(stepExecutionContext.stepOptionValueMap,
                        stepExecutionContext.stepContext) || [];
-    scope.loggingService.log(`Step execution ${step.identifier}(${step.name}) ` +
-                             'ended successfully');
+    this.emitInformationAvailable(`Step execution ${step.identifier}(${step.name}) ` +
+                                   'ended successfully');  
   }
 
   /**
@@ -179,11 +200,12 @@ export class BuildInContinuiApplication implements ContinuiApplication {
       const step = stepExecutionContext.step;
 
       try {
-        scope.loggingService.log(`Restoring step ${step.identifier}(${step.name})`);
+        this.emitInformationAvailable(`Restoring step ${step.identifier}(${step.name})`);
         return step.restore(stepExecutionContext.stepOptionValueMap, 
                             stepExecutionContext.stepContext) || [];
       } catch (error) {
-        scope.loggingService.log(`Error restoring step ${step.identifier}(${step.name}) ` + error);
+        this.emitInformationAvailable(`Error restoring step ${step.identifier}(${step.name}) ` +
+                                        error);
       } 
     });
   }
@@ -232,8 +254,6 @@ export class BuildInContinuiApplication implements ContinuiApplication {
     
     let existanceValiationErrorMessage: string = '';      
 
-    scope.loggingService.log('Validating steps identifiers existence');
-
     stepIdentifiers.forEach((stepIdentifier) => {
       try {
         this.getStep(stepIdentifier);
@@ -255,9 +275,7 @@ export class BuildInContinuiApplication implements ContinuiApplication {
     const scope = privateScope.get(this);
 
     let requiredOptiosErrorMessage: string = '';
-        
-    scope.loggingService.log('Validating steps required options provision');
-        
+                
     executionConfiguration.steps.forEach((stepIdentifier) => {
       const step: Step<any> = this.getStep(stepIdentifier);
       const stepOptionMap: StepOptionValueMap = 
@@ -307,5 +325,27 @@ export class BuildInContinuiApplication implements ContinuiApplication {
                                          unmergedExecutionConfiguration);
 
     return mergedExecutionConfiguration;
+  }
+
+  /**
+   * Emit an event notifying the progress.
+   * @param progress Represents the progress to inform.
+   * @param friendlyStatus Represents a friendly status relate to the progress.
+   */
+  private emitProgressChanged(progress: number, friendlyStatus: string) {
+    const executionProgressInformation: ExecutionProgressInformation = {
+      progress,
+      friendlyStatus,
+    };
+
+    this.emit(continuiApplicationEvents.PROGRESS_CHANGED, executionProgressInformation);
+  }
+
+  /**
+   * Emit an event notifying the available information.
+   * @param information Represents the information that is available.
+   */
+  private emitInformationAvailable(information: string) {
+    this.emit(continuiApplicationEvents.INFORMATION_AVAILABLE, information);
   }
 }
