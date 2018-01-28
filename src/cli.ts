@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-import { continuiApplicationFactory, activator } from './index';
+import { continuiApplicationFactory, activator, ContinuiApplication } from './index';
 import { ExecutionConfiguration } from './domain/models/executionConfiguration';
+import { ExecutionProgressInformation } from './domain/models/executionProgressInformation';
 import { CliRenderers } from './domain/cli/cliRenderer';
 import {
     CliExecutionConfigurationParsingService,
@@ -12,49 +13,69 @@ import {
 import {
     ExecutionConfigurationMergingService,
 } from './domain/services/executionConfigurationMergingService';
-import { connect } from 'http2';
-import { date } from '../../continui-step/dist/definitions/stepOptionType';
+import { LoggingService } from 'continui-services';
 
-const cliRenderers: CliRenderers[] = activator.resolve('cliRendererList');
-const cliExecutionConfigurationParsingService: CliExecutionConfigurationParsingService =
-    activator.resolve('cliExecutionConfigurationParsingService');
-const fromFileExecutionConfigurationProvider: FromFileExecutionConfigurationProvider =
-    activator.resolve('fromFileExecutionConfigurationProvider');
-const executionConfigurationMergingService: ExecutionConfigurationMergingService = 
-    activator.resolve('executionConfigurationMergingService');
-                    
-const cliExecutionConfiguration: ExecutionConfiguration = 
-    cliExecutionConfigurationParsingService.parse(process.argv);
-const fromFileExecutionConfiguration : ExecutionConfiguration = 
-    fromFileExecutionConfigurationProvider.getExecutionConfigrationFromFile(
-        cliExecutionConfiguration.cofigurationFile,
-    );
-const executionConfiguration: ExecutionConfiguration = 
-    executionConfigurationMergingService.mergeExecutionConfigurations(
-        fromFileExecutionConfiguration,
-        cliExecutionConfiguration,
-    );
+import * as continuiApplicationEvents from './domain/constants/continuiApplicationEvents';
 
-executionConfiguration.cofigurationFile = 'ignore-file-configuration';
+function cliExecution(
+    cliRendererList: CliRenderers[],
+    loggingService: LoggingService,
+    cliExecutionConfigurationParsingService: CliExecutionConfigurationParsingService,
+    fromFileExecutionConfigurationProvider: FromFileExecutionConfigurationProvider,
+    executionConfigurationMergingService: ExecutionConfigurationMergingService,
+) {
+  const cliExecutionConfiguration: ExecutionConfiguration =
+        cliExecutionConfigurationParsingService.parse(process.argv);
+  const fromFileExecutionConfiguration: ExecutionConfiguration =
+        fromFileExecutionConfigurationProvider.getExecutionConfigrationFromFile(
+            cliExecutionConfiguration.cofigurationFile,
+        );
+  const executionConfiguration: ExecutionConfiguration =
+        executionConfigurationMergingService.mergeExecutionConfigurations(
+            fromFileExecutionConfiguration,
+            cliExecutionConfiguration,
+        );
 
-const requestedCliRenderers = cliRenderers.filter((cliRenderer) => {
-  let isRendererKeyRequested: boolean = false;
+  executionConfiguration.cofigurationFile = 'ignore-file-configuration';
 
-  cliRenderer.keys.forEach((cliRedererKey) => {
-    isRendererKeyRequested = isRendererKeyRequested ||
-                            (process.argv.indexOf('-' + cliRedererKey) >= 0 ||
-                             process.argv.indexOf('--' + cliRedererKey) >= 0);
+  const requestedCliRenderers = cliRendererList.filter((cliRenderer) => {
+    let isRendererKeyRequested: boolean = false;
+
+    cliRenderer.keys.forEach((cliRedererKey) => {
+      isRendererKeyRequested = isRendererKeyRequested ||
+                (process.argv.indexOf('-' + cliRedererKey) >= 0 ||
+                    process.argv.indexOf('--' + cliRedererKey) >= 0);
+    });
+
+    return isRendererKeyRequested;
   });
 
-  return isRendererKeyRequested;
-});
+  requestedCliRenderers.forEach(cliRenderer => cliRenderer.render(executionConfiguration));
 
-requestedCliRenderers.forEach(cliRenderer => cliRenderer.render(executionConfiguration));
+  if (!requestedCliRenderers.length) {
+    const continuiApplication: ContinuiApplication =
+            continuiApplicationFactory.createsContinuiApplication();
 
-if (!requestedCliRenderers.length) {
-  continuiApplicationFactory.createsContinuiApplication()
-                              .execute(executionConfiguration);
+    continuiApplication.on(continuiApplicationEvents.PROGRESS_CHANGED,
+                           logProgressChanged);
+    continuiApplication.on(continuiApplicationEvents.INFORMATION_AVAILABLE,
+                           logInformationAvailable);
+
+    continuiApplication.execute(executionConfiguration);
+  }
+
+  function logProgressChanged(executionProgressInformation: ExecutionProgressInformation) {
+    loggingService.log(executionProgressInformation.progress + '% ' +
+                       executionProgressInformation.friendlyStatus);
+  }
+
+  function logInformationAvailable(informaion: string) {
+    loggingService.log(informaion);
+  }
+
 }
+
+activator.resolve(cliExecution);
 
 // [
 //       {
