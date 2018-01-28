@@ -368,9 +368,12 @@ export class BuildInContinuiApplication extends ContinuiApplication {
    * @param friendlyStatus Represents a friendly status relate to the progress.
    */
   private emitProgressChanged(progress: number, friendlyStatus: string) {
+    const scope = privateScope.get(this);
+
+    
     const executionProgressInformation: ExecutionProgressInformation = {
       progress,
-      friendlyStatus,
+      friendlyStatus: scope.textSecureService.parse(friendlyStatus)
     };
 
     this.emit(continuiApplicationEvents.PROGRESS_CHANGED, executionProgressInformation);
@@ -381,6 +384,9 @@ export class BuildInContinuiApplication extends ContinuiApplication {
    * @param information Represents the information that is available.
    */
   private emitInformationAvailable(information: string) {
-    this.emit(continuiApplicationEvents.INFORMATION_AVAILABLE, information);
+    const scope = privateScope.get(this);
+
+    this.emit(continuiApplicationEvents.INFORMATION_AVAILABLE,
+              scope.textSecureService.parse(information));
   }
 }
