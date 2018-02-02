@@ -3,6 +3,8 @@ import {
 } from '../../domain/cli/cliExecutionConfigurationParsingService';
 import { ExecutionConfiguration } from '../../domain/models/executionConfiguration';
 import { IdentifiedActionOptionMaps } from 'continui-action';
+import { ExecutionStep } from '../../domain/models/executionStep';
+import { normalize } from 'path';
 
 const minimist = require('minimist');
 
@@ -18,19 +20,12 @@ export class BuildInCliExecutionConfigurationParsingService
    */
   public parse(cliArguments: any[]): ExecutionConfiguration {
     const minimistParsedArguments = minimist(cliArguments.slice(2));
-    const actionDefinitionModules =
-      minimistParsedArguments.actionDefinitionModule instanceof Array ?
-        minimistParsedArguments.actionDefinitionModule :
-        minimistParsedArguments.actionDefinitionModule ? 
-          [minimistParsedArguments.actionDefinitionModule] : [];   
-
-    const fromArgumentsActionsOptionsValues = 
-      this.getActionsOptionsValuesFromParsedArguments(minimistParsedArguments);
+    const actionDefinitionModules: string[] = 
+      this.getNormalizedArrayArgument<string>(minimistParsedArguments.actionDefinitionModule);      
 
     return {
-      actions: minimistParsedArguments._,
+      steps: this.getExecutionStepsFromParsedArguments(minimistParsedArguments),
       actionsDeinitionsModules: actionDefinitionModules,
-      actionsOptionsValues: fromArgumentsActionsOptionsValues,
       cofigurationFile: minimistParsedArguments.cofigurationFile,
     };
   }
@@ -40,26 +35,36 @@ export class BuildInCliExecutionConfigurationParsingService
    * @param parsedArguments Represents the parsed cli arguments
    * @returns actions options values
    */
-  private getActionsOptionsValuesFromParsedArguments(parsedArguments: any) 
-    : IdentifiedActionOptionMaps {
+  private getExecutionStepsFromParsedArguments(parsedArguments: any) 
+    : ExecutionStep[] {
 
-    const identifiedActionOptionMap: IdentifiedActionOptionMaps = {};
+    const stepKeys: string[] = Object.keys(parsedArguments.step || {});
 
-    parsedArguments._.forEach((actionIdentifier) => {
-      const actionOptions = parsedArguments[actionIdentifier];
+    return stepKeys.map((stepKey) => {
+      const unparsedStepExecution: any = parsedArguments.step[stepKey];
 
-      if (actionOptions) {
-        if (typeof actionOptions !== 'object') {
-          throw new Error(`The provided options for action ${actionIdentifier} are not valid.`);
-        }
-
-        identifiedActionOptionMap[actionIdentifier] = parsedArguments[actionIdentifier];
-      } else {
-        identifiedActionOptionMap[actionIdentifier] = {};
+      if (!unparsedStepExecution.run) {
+        return;
       }
-    });
 
-    return identifiedActionOptionMap;
+      const executionStep: ExecutionStep = {
+        key: stepKey,
+        actionIdentifier: unparsedStepExecution.actionIdentifier,
+        actionOptionsValueMap: unparsedStepExecution,
+      };
+
+      delete unparsedStepExecution.run;
+      delete unparsedStepExecution.actionIdentifier;
+
+      return executionStep;
+    }).filter(executionStep => !!executionStep);
+  }
+
+  private getNormalizedArrayArgument<T>(arrayArgument: any): T[] {
+    return arrayArgument instanceof Array ?
+            arrayArgument :
+            arrayArgument ? 
+              [arrayArgument] : [];
   }
 }
 

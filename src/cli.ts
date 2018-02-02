@@ -57,20 +57,26 @@ function cliExecution(
             continuiApplicationFactory.createsContinuiApplication();
 
     continuiApplication.on(continuiApplicationEvents.PROGRESS_CHANGED,
-                           logProgressChanged);
+                           onProgressChanged);
     continuiApplication.on(continuiApplicationEvents.INFORMATION_AVAILABLE,
-                           logInformationAvailable);
+                           onInformationAvailable);
+    continuiApplication.on(continuiApplicationEvents.EXECUTION_FAILURE,
+                           onExecutionFailure);
 
     continuiApplication.execute(executionConfiguration);
   }
 
-  function logProgressChanged(executionProgressInformation: ExecutionProgressInformation) {
+  function onProgressChanged(executionProgressInformation: ExecutionProgressInformation) {
     loggingService.log(executionProgressInformation.progress + '% ' +
                        executionProgressInformation.friendlyStatus);
   }
 
-  function logInformationAvailable(informaion: string) {
+  function onInformationAvailable(informaion: string) {
     loggingService.log(informaion);
+  }
+
+  function onExecutionFailure(error: Error) {
+    process.exit(1);
   }
 
 }

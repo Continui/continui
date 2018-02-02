@@ -24,6 +24,7 @@ import { ExecutionProgressInformation } from '../domain/models/executionProgress
 import co from 'co';
 
 import * as continuiApplicationEvents from '../domain/constants/continuiApplicationEvents';
+import { ExecutionStep } from '../domain/models/executionStep';
 
 type ActionExecutionContext = {
   action: Action<any>,
@@ -76,21 +77,20 @@ export class BuildInContinuiApplication extends ContinuiApplication {
       mergedExecutionConfiguration = this.getMergedExecutionConfiguration(executionConfiguration);
     }
 
-    if (!mergedExecutionConfiguration.actions.length) {
-      throw new Error('Must provided at least one action to run. eg. [continui myaction1 ' +
-        '--myaction1.param1 "param1value" myaction2]');
+    if (!mergedExecutionConfiguration.steps.length) {
+      throw new Error('Must provided at least one step to run. eg. [continui --step.mystep1.run ' +
+        '--step.mystep1.param1 "param1value" --step.mystep2.run]');
     }
 
     this.emitProgressChanged(0, `Starting execution`);
 
-    if (mergedExecutionConfiguration.actionsDeinitionsModules &&
-      mergedExecutionConfiguration.actionsDeinitionsModules.length) {
+    const modulesToLoadCount =
+        mergedExecutionConfiguration.actionsDeinitionsModules ?
+          mergedExecutionConfiguration.actionsDeinitionsModules.length : 0;
 
-      const modulesToLoadCount =
-        mergedExecutionConfiguration.actionsDeinitionsModules.length;
+    this.emitProgressChanged(10, `Loading ${modulesToLoadCount} actions definitions modules`);
 
-      this.emitProgressChanged(10, `Loading ${modulesToLoadCount} actions definitions modules`);
-
+    if (modulesToLoadCount) {
       this.loadActions(
         ...scope.actionsProvider
           .getActionsFromActionModules(mergedExecutionConfiguration.actionsDeinitionsModules),
@@ -103,28 +103,31 @@ export class BuildInContinuiApplication extends ContinuiApplication {
     this.emitProgressChanged(30, `${scope.actions.length} actions recognized`);
 
     this.emitProgressChanged(35, `Registering sensitive data for secure outputs.`);
-    this.registerSensitiveText(mergedExecutionConfiguration.actionsOptionsValues);
+    this.registerSensitiveText(mergedExecutionConfiguration.steps);
 
     this.emitProgressChanged(40, `Validating required actions existance`);
-    this.validateIdentifiersExistence(mergedExecutionConfiguration.actions);
+    this.validateActionsIdentifiersExistence(
+      mergedExecutionConfiguration.steps.map(step => step.actionIdentifier),
+    );
 
     this.emitProgressChanged(45, `Validating required options provision`);
-    this.validateRequiredOptionProvision(mergedExecutionConfiguration);
+    this.validateActionsRequiredOptionProvision(mergedExecutionConfiguration);
 
     co(function* () {
       const self: BuildInContinuiApplication = <BuildInContinuiApplication>this;
 
-      yield mergedExecutionConfiguration.actions.map((actionIdentifier, index) => {
+      yield mergedExecutionConfiguration.steps.map((step, index) => {
         // I assume that the find function will always retrieve a action because his existence is
-        // previously validated by the validateIdentifiersExistence function.
-        const action: Action<any> = self.getAction(actionIdentifier);
-        const actionOpionsValueMap: ActionOptionValueMap =
-          mergedExecutionConfiguration.actionsOptionsValues[actionIdentifier] || {};
+        // previously validated by the validateActionsIdentifiersExistence function.
+        const action: Action<any> = self.getAction(step.actionIdentifier);
+        const actionOpionsValueMap: ActionOptionValueMap = step.actionOptionsValueMap || {};
         const actionProgressRepresentation: number =
-          50 + ((50 / mergedExecutionConfiguration.actions.length) * index);
+          50 + ((50 / mergedExecutionConfiguration.steps.length) * index);
 
-        self.emitProgressChanged(actionProgressRepresentation,
-                                 `Working with ${action.identifier}(${action.name})`);
+        self.emitProgressChanged(
+          actionProgressRepresentation,
+          `Working with step [${step.key}] ${action.identifier}(${action.name})`,
+        );
 
         const toDisplayOptions = Object.keys(actionOpionsValueMap).map((optionKey) => {
           const optionValue: string = actionOpionsValueMap[optionKey] !== undefined ?
@@ -149,16 +152,16 @@ export class BuildInContinuiApplication extends ContinuiApplication {
 
       self.emitProgressChanged(100, `Execution done.`);
     }.bind(this)).catch((error) => {
-      console.error(error);
-
       co(function* () {
         const self: BuildInContinuiApplication = <BuildInContinuiApplication>this;
 
-        self.emitInformationAvailable(`Restoring actions execution due error: ` + error);
+        self.emitInformationAvailable(`Restoring actions execution due error in step: \n` +
+                                      ` ${error.stack || (error + '\n Stack not provided')}`);
         yield self.restoreExecutedAction(actionExecutionContexts);
       }.bind(this));
 
       this.emitProgressChanged(0, `Execution fail.`);
+      this.emitExecutionFailure(error);
     });
   }
 
@@ -185,17 +188,21 @@ export class BuildInContinuiApplication extends ContinuiApplication {
   private loadDefaultActionValuesInExecutionContext(executionConfiguration: ExecutionConfiguration):
     void {
     privateScope.get(this).actions.forEach((action) => {
-      action.options
-        .filter(option => option.defaultValue !== undefined)
-        .forEach((option) => {
+      const actionExecutionSteps: ExecutionStep[] =
+        executionConfiguration.steps.filter(step => step.actionIdentifier === action.identifier);
 
-          const steOptionValueMap: ActionOptionValueMap =
-            executionConfiguration.actionsOptionsValues[action.identifier];
+      if (actionExecutionSteps.length) {
+        action.options
+          .filter(option => option.defaultValue !== undefined)
+          .forEach((option) => {
 
-          if (steOptionValueMap[option.key] === undefined) {
-            steOptionValueMap[option.key] = option.defaultValue;
-          }
-        });
+            actionExecutionSteps.forEach((executionStep) => {
+              if (executionStep.actionOptionsValueMap[option.key] === undefined) {
+                executionStep.actionOptionsValueMap[option.key] = option.defaultValue;
+              }
+            });
+          });
+      }
     });
   }
 
@@ -263,19 +270,27 @@ export class BuildInContinuiApplication extends ContinuiApplication {
 
   /**
    * Register all secure values to be secured in any application output.
-   * @param identifiedActionOptionMaps Represents the action otion value map.
+   * @param executionSteps Represents the steps to be executed.
    */
-  private registerSensitiveText(identifiedActionOptionMaps: IdentifiedActionOptionMaps): void {
+  private registerSensitiveText(executionSteps: ExecutionStep[]): void {
     const scope = privateScope.get(this);
 
     scope.actions.forEach((action) => {
-      action.options.forEach((option) => {
-        if (option.isSecure) {
-          scope.textSecureService.registerSensitiveText(
-            identifiedActionOptionMaps[action.identifier][option.key],
-          );
-        }
-      });
+      const actionExecutionSteps: ExecutionStep[] =
+        executionSteps.filter(step => step.actionIdentifier === action.identifier);
+
+      if (actionExecutionSteps.length) {
+        action.options.forEach((option) => {
+          if (option.isSecure) {
+
+            actionExecutionSteps.forEach((executionStep) => {
+              scope.textSecureService.registerSensitiveText(
+                executionStep.actionOptionsValueMap[option.key],
+              );
+            });
+          }
+        });
+      }
     });
   }
 
@@ -283,7 +298,7 @@ export class BuildInContinuiApplication extends ContinuiApplication {
    * Validates that all provided identifiers are loaded into the application.
    * @param actionIdentifiers Represents the action identifiers to be validated.
    */
-  private validateIdentifiersExistence(actionIdentifiers: string[]): void {
+  private validateActionsIdentifiersExistence(actionIdentifiers: string[]): void {
     const scope = privateScope.get(this);
 
     let existanceValiationErrorMessage: string = '';
@@ -305,15 +320,16 @@ export class BuildInContinuiApplication extends ContinuiApplication {
    * Validates that all required options by the requested actions were provided.
    * @param executionConfiguration Represetns the execution configuration.
    */
-  private validateRequiredOptionProvision(executionConfiguration: ExecutionConfiguration): void {
+  private validateActionsRequiredOptionProvision(executionConfiguration: ExecutionConfiguration):
+    void {
+      
     const scope = privateScope.get(this);
 
     let requiredOptiosErrorMessage: string = '';
 
-    executionConfiguration.actions.forEach((actionIdentifier) => {
-      const action: Action<any> = this.getAction(actionIdentifier);
-      const actionOptionMap: ActionOptionValueMap =
-        executionConfiguration.actionsOptionsValues[action.identifier] || {};
+    executionConfiguration.steps.forEach((step) => {
+      const action: Action<any> = this.getAction(step.actionIdentifier);
+      const actionOptionMap: ActionOptionValueMap = step.actionOptionsValueMap || {};
 
       let actionRequiredOptiosErrorMessage: string = '';
 
@@ -388,5 +404,16 @@ export class BuildInContinuiApplication extends ContinuiApplication {
 
     this.emit(continuiApplicationEvents.INFORMATION_AVAILABLE,
               scope.textSecureService.parse(information));
+  }
+
+  /**
+   * Emit an event notifying the execution failure.
+   * @param error Represents the error.
+   */
+  private emitExecutionFailure(error: Error) {
+    const scope = privateScope.get(this);
+
+    this.emit(continuiApplicationEvents.EXECUTION_FAILURE,
+              error);
   }
 }

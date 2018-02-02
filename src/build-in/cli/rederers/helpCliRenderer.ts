@@ -44,15 +44,6 @@ export class HelpCliRenderer implements CliRenderers {
                    .getActionsFromActionModules(executionConfiguration.actionsDeinitionsModules);
     }
 
-    if (executionConfiguration.actions &&
-        executionConfiguration.actions.length) {
-
-      executionConfiguration.actions.forEach((actionidentifier) => {
-        if (!actions.find(action => action.identifier === actionidentifier)) {
-          throw new Error(`Can not load action ${actionidentifier} to generate help`);
-        }
-      });      
-    }
 
     scope.loggingService.log('Help requested\n\n' + 
                               (actions.length ? this.getActionsHelp(...actions) : 
