@@ -1,4 +1,4 @@
-import { StepActivationReference } from 'continui-step';
+import { ActionActivationReference } from 'continui-action';
 
 /**
  * Represenst an activator that can register and solve depencencies.
@@ -9,7 +9,7 @@ export interface Activator {
      * @param reference Represents the reference that will be registered.
      * @returns The activator instance to fluently register dependencies.
      */
-  registerReference(reference: StepActivationReference) : Activator; 
+  registerReference(reference: ActionActivationReference) : Activator; 
 
     /**
      * Register dependencies with the provided alias, in the provided context.
@@ -17,7 +17,7 @@ export interface Activator {
      * @param context Represents the where the registration will occurs.
      * @returns The activator instance to fluently register dependencies.
      */
-  registerReferenceWithContext(reference: StepActivationReference, context: string) : Activator; 
+  registerReferenceWithContext(reference: ActionActivationReference, context: string) : Activator; 
 
     /**
      * Resolve the dependency with the provided alias.

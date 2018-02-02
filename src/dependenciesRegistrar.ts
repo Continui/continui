@@ -3,14 +3,14 @@ import { BuildInLoggingService } from './build-in/services/buildInLoggingService
 import { BuildInTextTemplateService } from './build-in/services/buildInTextTemplateService';
 import { BuildInTextSecureService } from './build-in/services/buildInTextSecureService';
 import {
-  StepActivationReference,
-  StepActivationReferenceType,
-  StepActivationReferenceMode,
-} from 'continui-step';
+  ActionActivationReference,
+  ActionActivationReferenceType,
+  ActionActivationReferenceMode,
+} from 'continui-action';
 import {
   BuildInTextTemplateContextProvider,
 } from './build-in/services/buildInTextTemplateContextProvider';
-import { BuildInStepsProvider } from './build-in/providers/buildInStepsProvider';
+import { BuildInActionsProvider } from './build-in/providers/buildInActionsProvider';
 import {
   BuildInExecutionConfigurationMergingService,
 } from './build-in/services/buildInExecutionConfigurationMergingService';
@@ -22,7 +22,7 @@ import {
 } from './build-in/cli/buildIncliExecutionConfigurationParsingService';
 import { HelpCliRenderer } from './build-in/cli/rederers/helpCliRenderer';
 import { VersionCliRenderer } from './build-in/cli/rederers/versionCliRenderer';
-import { StepsCliRenderer } from './build-in/cli/rederers/stepsCliRenderer';
+import { ActionsCliRenderer } from './build-in/cli/rederers/actionsCliRenderer';
 
 
 export class BuildInDependenciesRegistrar {
@@ -30,7 +30,7 @@ export class BuildInDependenciesRegistrar {
     activator.registerReference({
       alias: 'activator',       
       target:  activator,
-      type: StepActivationReferenceType.constant,
+      type: ActionActivationReferenceType.constant,
     });
 
     this.registerServicesIntoActivator(activator);
@@ -48,11 +48,11 @@ export class BuildInDependenciesRegistrar {
     }).registerReference({
       alias: 'textSecureService',
       target:  BuildInTextSecureService,
-      mode: StepActivationReferenceMode.singelton,
+      mode: ActionActivationReferenceMode.singelton,
     }).registerReference({
       alias: 'textTemplateContextProvider',
       target: BuildInTextTemplateContextProvider,
-      mode: StepActivationReferenceMode.singelton,
+      mode: ActionActivationReferenceMode.singelton,
     }).registerReference({
       alias: 'textTemplateService',
       target:  BuildInTextTemplateService,
@@ -64,9 +64,9 @@ export class BuildInDependenciesRegistrar {
       alias: 'fromFileExecutionConfigurationProvider',
       target: BuildInFromFileExecutionConfigurationProvider,
     }).registerReference({
-      alias: 'stepsProvider',
-      target: BuildInStepsProvider,
-      mode: StepActivationReferenceMode.singelton,
+      alias: 'actionsProvider',
+      target: BuildInActionsProvider,
+      mode: ActionActivationReferenceMode.singelton,
     });
   }
 
@@ -82,7 +82,7 @@ export class BuildInDependenciesRegistrar {
       target: VersionCliRenderer,
     }).registerReference({
       alias: 'cliRenderer',
-      target: StepsCliRenderer,
+      target: ActionsCliRenderer,
     });
   }
 }

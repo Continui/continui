@@ -1,8 +1,8 @@
-import { IdentifiedStepOptionMaps } from 'continui-step';
+import { IdentifiedActionOptionMaps } from 'continui-action';
 
 export interface ExecutionConfiguration {
-  steps: string[];
-  stepsDeinitionsModules?: string[];
-  stepsOptionsValues?: IdentifiedStepOptionMaps;
+  actions: string[];
+  actionsDeinitionsModules?: string[];
+  actionsOptionsValues?: IdentifiedActionOptionMaps;
   cofigurationFile?: string;
 }

@@ -2,7 +2,7 @@ import {
   CliExecutionConfigurationParsingService,
 } from '../../domain/cli/cliExecutionConfigurationParsingService';
 import { ExecutionConfiguration } from '../../domain/models/executionConfiguration';
-import { IdentifiedStepOptionMaps } from 'continui-step';
+import { IdentifiedActionOptionMaps } from 'continui-action';
 
 const minimist = require('minimist');
 
@@ -18,44 +18,48 @@ export class BuildInCliExecutionConfigurationParsingService
    */
   public parse(cliArguments: any[]): ExecutionConfiguration {
     const minimistParsedArguments = minimist(cliArguments.slice(2));
-    const stepDefinitionModules = minimistParsedArguments.stepDefinitionModule instanceof Array ?
-                                      minimistParsedArguments.stepDefinitionModule :
-                                      minimistParsedArguments.stepDefinitionModule ? 
-                                        [minimistParsedArguments.stepDefinitionModule] : [];   
+    const actionDefinitionModules =
+      minimistParsedArguments.actionDefinitionModule instanceof Array ?
+        minimistParsedArguments.actionDefinitionModule :
+        minimistParsedArguments.actionDefinitionModule ? 
+          [minimistParsedArguments.actionDefinitionModule] : [];   
+
+    const fromArgumentsActionsOptionsValues = 
+      this.getActionsOptionsValuesFromParsedArguments(minimistParsedArguments);
 
     return {
-      steps: minimistParsedArguments._,
-      stepsDeinitionsModules: stepDefinitionModules,
-      stepsOptionsValues: this.getStepsOptionsValuesFromParsedArguments(minimistParsedArguments),
+      actions: minimistParsedArguments._,
+      actionsDeinitionsModules: actionDefinitionModules,
+      actionsOptionsValues: fromArgumentsActionsOptionsValues,
       cofigurationFile: minimistParsedArguments.cofigurationFile,
     };
   }
 
   /**
-   * Returns the steps options values based on the provided parsed arguments.
+   * Returns the actions options values based on the provided parsed arguments.
    * @param parsedArguments Represents the parsed cli arguments
-   * @returns steps options values
+   * @returns actions options values
    */
-  private getStepsOptionsValuesFromParsedArguments(parsedArguments: any) 
-    : IdentifiedStepOptionMaps {
+  private getActionsOptionsValuesFromParsedArguments(parsedArguments: any) 
+    : IdentifiedActionOptionMaps {
 
-    const identifiedStepOptionMap: IdentifiedStepOptionMaps = {};
+    const identifiedActionOptionMap: IdentifiedActionOptionMaps = {};
 
-    parsedArguments._.forEach((stepIdentifier) => {
-      const stepOptions = parsedArguments[stepIdentifier];
+    parsedArguments._.forEach((actionIdentifier) => {
+      const actionOptions = parsedArguments[actionIdentifier];
 
-      if (stepOptions) {
-        if (typeof stepOptions !== 'object') {
-          throw new Error(`The provided options for step ${stepIdentifier} are not valid.`);
+      if (actionOptions) {
+        if (typeof actionOptions !== 'object') {
+          throw new Error(`The provided options for action ${actionIdentifier} are not valid.`);
         }
 
-        identifiedStepOptionMap[stepIdentifier] = parsedArguments[stepIdentifier];
+        identifiedActionOptionMap[actionIdentifier] = parsedArguments[actionIdentifier];
       } else {
-        identifiedStepOptionMap[stepIdentifier] = {};
+        identifiedActionOptionMap[actionIdentifier] = {};
       }
     });
 
-    return identifiedStepOptionMap;
+    return identifiedActionOptionMap;
   }
 }
 

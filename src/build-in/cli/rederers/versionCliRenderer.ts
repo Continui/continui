@@ -1,6 +1,6 @@
 import { CliRenderers } from '../../../domain/cli/cliRenderer';
 import { ExecutionConfiguration } from '../../../domain/models/executionConfiguration';
-import { Step, StepOption } from 'continui-step';
+import { Action, ActionOption } from 'continui-action';
 import { LoggingService } from 'continui-services';
 
 

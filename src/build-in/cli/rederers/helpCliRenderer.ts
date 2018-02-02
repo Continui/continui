@@ -1,12 +1,12 @@
 import { CliRenderers } from '../../../domain/cli/cliRenderer';
 import { ExecutionConfiguration } from '../../../domain/models/executionConfiguration';
-import { Step, StepOption, StepOptionTypes } from 'continui-step';
-import { StepsProvider } from '../../../domain/providers/stepsProvider';
+import { Action, ActionOption, ActionOptionTypes } from 'continui-action';
+import { ActionsProvider } from '../../../domain/providers/actionsProvider';
 import { LoggingService } from 'continui-services';
 
 
 const privateScope: WeakMap<HelpCliRenderer, {
-  stepsProvider: StepsProvider,
+  actionsProvider: ActionsProvider,
   loggingService: LoggingService,
 }> = new WeakMap();
 
@@ -15,9 +15,9 @@ const privateScope: WeakMap<HelpCliRenderer, {
  */
 export class HelpCliRenderer implements CliRenderers {
 
-  constructor(stepsProvider: StepsProvider, loggingService: LoggingService) {
+  constructor(actionsProvider: ActionsProvider, loggingService: LoggingService) {
     privateScope.set(this, {
-      stepsProvider,
+      actionsProvider,
       loggingService,
     });
   }
@@ -35,62 +35,62 @@ export class HelpCliRenderer implements CliRenderers {
   public render(executionConfiguration: ExecutionConfiguration): void {
     const scope = privateScope.get(this);
 
-    let steps: Step<any>[] = [];
+    let actions: Action<any>[] = [];
 
-    if (executionConfiguration.stepsDeinitionsModules &&
-        executionConfiguration.stepsDeinitionsModules.length) {
+    if (executionConfiguration.actionsDeinitionsModules &&
+        executionConfiguration.actionsDeinitionsModules.length) {
 
-      steps = scope.stepsProvider
-                   .getStepsFromStepModules(executionConfiguration.stepsDeinitionsModules);
+      actions = scope.actionsProvider
+                   .getActionsFromActionModules(executionConfiguration.actionsDeinitionsModules);
     }
 
-    if (executionConfiguration.steps &&
-        executionConfiguration.steps.length) {
+    if (executionConfiguration.actions &&
+        executionConfiguration.actions.length) {
 
-      executionConfiguration.steps.forEach((stepidentifier) => {
-        if (!steps.find(step => step.identifier === stepidentifier)) {
-          throw new Error(`Can not load step ${stepidentifier} to generate help`);
+      executionConfiguration.actions.forEach((actionidentifier) => {
+        if (!actions.find(action => action.identifier === actionidentifier)) {
+          throw new Error(`Can not load action ${actionidentifier} to generate help`);
         }
       });      
     }
 
     scope.loggingService.log('Help requested\n\n' + 
-                              (steps.length ? this.getStepsHelp(...steps) : 
-                                              this.getStepOptionsHelp(...this.mainOption)));
+                              (actions.length ? this.getActionsHelp(...actions) : 
+                                              this.getActionOptionsHelp(...this.mainOption)));
   }
 
   /**
-   * Returns help generated based on the provided steps and his options.
-   * @param steps Represenst the steps.
+   * Returns help generated based on the provided actions and his options.
+   * @param actions Represenst the actions.
    * @returns The generated help.
    */
-  private getStepsHelp(...steps: Step<any>[]): string {
+  private getActionsHelp(...actions: Action<any>[]): string {
     let generatedHelp: string = '';
 
-    steps.forEach((step) => {
+    actions.forEach((action) => {
       if (generatedHelp) {
         generatedHelp += '\n';
       }
 
-      generatedHelp += `Help for step ${step.identifier}(${step.name}):\n\n`;
+      generatedHelp += `Help for action ${action.identifier}(${action.name}):\n\n`;
       generatedHelp += 'Description:\n';
-      generatedHelp += `${step.description}\n\n`;
+      generatedHelp += `${action.description}\n\n`;
       generatedHelp += 'Options:\n';
-      generatedHelp += this.getStepOptionsHelp(...step.options);
+      generatedHelp += this.getActionOptionsHelp(...action.options);
     });
 
     return generatedHelp;
   }
 
   /**
-   * Returns help generated based on the provided steps options.
-   * @param stepsOption Represenst the steps options.
+   * Returns help generated based on the provided actions options.
+   * @param actionsOption Represenst the actions options.
    * @returns The generated help.
    */
-  private getStepOptionsHelp(...stepsOption: StepOption[]): string {
+  private getActionOptionsHelp(...actionsOption: ActionOption[]): string {
     let generatedHelp: string = '';
 
-    stepsOption.forEach((option) => {
+    actionsOption.forEach((option) => {
       if (generatedHelp) {
         generatedHelp += '\n';
       }
@@ -109,19 +109,19 @@ export class HelpCliRenderer implements CliRenderers {
   private mainOption = [
     {
       key: 'help',
-      type: StepOptionTypes.boolean,
-      description: '(-h) Make the tool display the help, if steps are provided, the steps ' +
+      type: ActionOptionTypes.boolean,
+      description: '(-h) Make the tool display the help, if actions are provided, the actions ' +
         'help will be displayed.',
     },
     {
       key: 'version',
-      type: StepOptionTypes.boolean,
+      type: ActionOptionTypes.boolean,
       description: '(-v) Make the tool display the version.',
     },
     {
-      key: 'steps',
-      type: StepOptionTypes.boolean,
-      description: '(-s) Make the tool display the available steps.',
+      key: 'actions',
+      type: ActionOptionTypes.boolean,
+      description: '(-s) Make the tool display the available actions.',
     },
   ];
 }

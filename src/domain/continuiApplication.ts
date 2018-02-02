@@ -1,4 +1,4 @@
-import { IdentifiedStepOptionMaps, Step } from 'continui-step';
+import { IdentifiedActionOptionMaps, Action } from 'continui-action';
 import { ExecutionConfiguration } from './models/executionConfiguration';
 import { EventEmitter } from 'events';
 
@@ -14,8 +14,8 @@ export abstract class ContinuiApplication extends EventEmitter  {
   abstract execute(executionConfiguration: ExecutionConfiguration): void;
 
     /**
-     * Load the provided steps to his future execution.
-     * @param steps Represents the steps that will be executed.
+     * Load the provided actions to his future execution.
+     * @param actions Represents the actions that will be executed.
      */
-  abstract loadSteps(...steps: Step<any>[]): void;
+  abstract loadActions(...actions: Action<any>[]): void;
 }

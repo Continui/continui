@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { IdentifiedStepOptionMaps } from 'continui-step';
+import { IdentifiedActionOptionMaps } from 'continui-action';
 import {
   CliExecutionConfigurationParsingService,
 } from '../../../src/domain/cli/cliExecutionConfigurationParsingService';
@@ -17,22 +17,22 @@ describe('The Build In Cli Arguments Parsing Service', () => {
     const executionConfiguration: ExecutionConfiguration =  
         cliArgumentsParsingService.parse(['executor',
           'application',
-          'testStep',
-          '--testStep.param1',
+          'testAction',
+          '--testAction.param1',
           'value1',
-          '--testStep.param2',
+          '--testAction.param2',
           'value2',
-          'testParamerlessStep']);
+          'testParamerlessAction']);
     
-    assert.ok(executionConfiguration.steps instanceof Array,
-              'The steps option in main step must be an array');
-    assert.ok(executionConfiguration.steps.indexOf('testStep') >= 0,
-              'Can not find the step {step} in the step collection');
-    assert.ok(executionConfiguration.steps.indexOf('testParamerlessStep') >= 0,
-              'Can not find the step {step} in the step collection');
-    assert.ok(executionConfiguration.stepsOptionsValues.testStep,
-              'Can not find the option for the step {testStep}');
-    assert.equal(executionConfiguration.stepsOptionsValues.testStep.param1, 'value1');
-    assert.equal(executionConfiguration.stepsOptionsValues.testStep.param2, 'value2');
+    assert.ok(executionConfiguration.actions instanceof Array,
+              'The actions option in main action must be an array');
+    assert.ok(executionConfiguration.actions.indexOf('testAction') >= 0,
+              'Can not find the action {action} in the action collection');
+    assert.ok(executionConfiguration.actions.indexOf('testParamerlessAction') >= 0,
+              'Can not find the action {action} in the action collection');
+    assert.ok(executionConfiguration.actionsOptionsValues.testAction,
+              'Can not find the option for the action {testAction}');
+    assert.equal(executionConfiguration.actionsOptionsValues.testAction.param1, 'value1');
+    assert.equal(executionConfiguration.actionsOptionsValues.testAction.param2, 'value2');
   });
 });

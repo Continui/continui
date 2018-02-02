@@ -1,10 +1,10 @@
 import { Activator } from '../domain/activator';
 import { createKernel, Kernel } from '@jems/di';
 import { 
-  StepActivationReference,
-  StepActivationReferenceMode,
-  StepActivationReferenceType, 
-} from 'continui-step';
+  ActionActivationReference,
+  ActionActivationReferenceMode,
+  ActionActivationReferenceType, 
+} from 'continui-action';
 import { AsAndInAndWhenSyntax } from '@jems/di/dist/fluent-syntaxes/asAndInAndWhenSyntax';
 import { connect } from 'tls';
 
@@ -28,7 +28,7 @@ export class BuildInActivator implements Activator {
      * @param reference Represents the reference that will be registered.
      * @returns The activator instance to fluently register dependencies.
      */
-  public registerReference(reference: StepActivationReference) : Activator {
+  public registerReference(reference: ActionActivationReference) : Activator {
     const bind = this.getKernelBind(reference.alias);        
     const bindBehavior = bind.to(reference.target);
     
@@ -44,7 +44,7 @@ export class BuildInActivator implements Activator {
    * @param context Represents the where the registration will occurs.
    * @returns The activator instance to fluently register dependencies.
    */
-  public registerReferenceWithContext(reference: StepActivationReference,
+  public registerReferenceWithContext(reference: ActionActivationReference,
                                       context: string) : Activator {
     if (!context) {
       throw Error('Must provided a valid context');
@@ -77,20 +77,20 @@ export class BuildInActivator implements Activator {
   }
 
   /**
-   * Configures the provided bind with the provided step activation reference type.
+   * Configures the provided bind with the provided action activation reference type.
    * @param syntax Represents the syntax to fluently configure the bind.
-   * @param stepActivationReferenceType Represetns the activation reference type to be configured.
+   * @param actionActivationReferenceType Represetns the activation reference type to be configured.
    */
   private configureBindReferenceType(syntax: AsAndInAndWhenSyntax,
-                                     stepActivationReferenceType: StepActivationReferenceType) {
-    switch (stepActivationReferenceType) {      
-      case StepActivationReferenceType.constant:
+                                     actionActivationReferenceType: ActionActivationReferenceType) {
+    switch (actionActivationReferenceType) {      
+      case ActionActivationReferenceType.constant:
         syntax.asConstant();
         break;
-      case StepActivationReferenceType.executableFunction:
+      case ActionActivationReferenceType.executableFunction:
         syntax.asBuilderFunction();
         break;
-      case StepActivationReferenceType.instance:
+      case ActionActivationReferenceType.instance:
       default:
         syntax.asInstance();
         break;
@@ -98,20 +98,20 @@ export class BuildInActivator implements Activator {
   }
 
   /**
-   * Configures the provided bind with the provided step activation reference mode.
+   * Configures the provided bind with the provided action activation reference mode.
    * @param syntax Represents the syntax to fluently configure the bind.
-   * @param stepActivationReferenceMode Represetns the activation reference mode to be configured.
+   * @param actionActivationReferenceMode Represetns the activation reference mode to be configured.
    */
   private configureBindReferenceMode(syntax: AsAndInAndWhenSyntax,
-                                     stepActivationReferenceMode: StepActivationReferenceMode) {
-    switch (stepActivationReferenceMode) {      
-      case StepActivationReferenceMode.perResolution:
+                                     actionActivationReferenceMode: ActionActivationReferenceMode) {
+    switch (actionActivationReferenceMode) {      
+      case ActionActivationReferenceMode.perResolution:
         syntax.inPerResolutionMode();
         break;
-      case StepActivationReferenceMode.singelton:
+      case ActionActivationReferenceMode.singelton:
         syntax.inSingletonMode();
         break;
-      case StepActivationReferenceMode.each:
+      case ActionActivationReferenceMode.each:
       default:
         syntax.inPerCallMode();
         break;
