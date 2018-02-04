@@ -1,12 +1,11 @@
 import * as assert from 'assert';
 
-import { IdentifiedActionOptionMaps } from 'continui-action';
 import {
   CliExecutionConfigurationParsingService,
 } from '../../../src/domain/cli/cliExecutionConfigurationParsingService';
 import {
   BuildInCliExecutionConfigurationParsingService,
-} from '../../../src/build-in/cli/buildIncliExecutionConfigurationParsingService';
+} from '../../../src/build-in/cli/services/buildIncliExecutionConfigurationParsingService';
 import { ExecutionConfiguration } from '../../../src/domain/models/executionConfiguration';
 import { sep } from 'path';
 

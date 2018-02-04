@@ -1,9 +1,8 @@
 import {
   CliExecutionConfigurationParsingService,
-} from '../../domain/cli/cliExecutionConfigurationParsingService';
-import { ExecutionConfiguration } from '../../domain/models/executionConfiguration';
-import { IdentifiedActionOptionMaps } from 'continui-action';
-import { ExecutionStep } from '../../domain/models/executionStep';
+} from '../../../domain/cli/cliExecutionConfigurationParsingService';
+import { ExecutionConfiguration } from '../../../domain/models/executionConfiguration';
+import { ExecutionStep } from '../../../domain/models/executionStep';
 import { normalize } from 'path';
 
 const minimist = require('minimist');

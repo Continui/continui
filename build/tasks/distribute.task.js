@@ -25,7 +25,13 @@ const rollupOptions = {
         'co',
         'deepmerge',
         'minimist',
-        '@jems/di'
+        '@jems/di',
+        'continui-action',
+        'continui-services',
+        'ejs',
+        'chalk',
+        'child_process',
+        'events'
     ]
 }
 

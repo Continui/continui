@@ -19,7 +19,7 @@ import {
 } from './build-in/providers/buildInFromFileExecutionConfigurationProvider';
 import {
   BuildInCliExecutionConfigurationParsingService,
-} from './build-in/cli/buildIncliExecutionConfigurationParsingService';
+} from './build-in/cli/services/buildIncliExecutionConfigurationParsingService';
 import { HelpCliRenderer } from './build-in/cli/rederers/helpCliRenderer';
 import { VersionCliRenderer } from './build-in/cli/rederers/versionCliRenderer';
 import { ActionsCliRenderer } from './build-in/cli/rederers/actionsCliRenderer';

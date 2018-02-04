@@ -1,4 +1,4 @@
-import { IdentifiedActionOptionMaps, Action } from 'continui-action';
+import { Action } from 'continui-action';
 import { ExecutionConfiguration } from './models/executionConfiguration';
 import { EventEmitter } from 'events';
 

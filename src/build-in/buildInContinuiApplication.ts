@@ -4,7 +4,6 @@ import {
   ActionOption,
   ActionOptionTypes,
   ActionOptionValueMap,
-  IdentifiedActionOptionMaps,
 } from 'continui-action';
 import {
   LoggingService,
