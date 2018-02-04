@@ -23,7 +23,12 @@ export class BuildInCommandExecutionService implements CommandExecutionService {
 
       exec(command, options, (error: Error, stdout: string, strerr: string) => {
         if (error) {
-          reject(error);
+          let errorMessage: string;
+          errorMessage = stdout ? `\n\n${stdout}\n` : '';
+          errorMessage += strerr ? `ErrorOutput: \n${stdout}\n` : '';
+          errorMessage += error;
+
+          reject(new Error(errorMessage));
         }
         resolve(stdout);
       });
