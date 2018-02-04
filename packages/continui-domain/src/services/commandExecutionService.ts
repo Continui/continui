@@ -7,6 +7,6 @@ export interface CommandExecutionService {
     /**
      * Returns the execution output of the provided command with the provided options. 
      */
-  excuteCommand(command: string,
-                commandExecutionOptions?: CommandExecutionOptions): Promise<string>;
+  executeCommand(command: string,
+                 commandExecutionOptions?: CommandExecutionOptions): Promise<string>;
 }
