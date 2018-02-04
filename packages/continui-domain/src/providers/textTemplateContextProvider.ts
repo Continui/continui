@@ -1,4 +1,4 @@
-import { TextTemplateContext } from './textTemplateContext';
+import { TextTemplateContext } from '../models/textTemplateContext';
 
 /**
  * Represents a provider that can provided text templates 

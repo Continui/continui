@@ -1,4 +1,4 @@
-import { LoggingData } from './loggingData';
+import { LoggingData } from '../models/loggingData';
 /**
  * Represents a service that allow log data.
  */
