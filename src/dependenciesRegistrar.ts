@@ -23,31 +23,32 @@ import {
 import { HelpCliRenderer } from './build-in/cli/rederers/helpCliRenderer';
 import { VersionCliRenderer } from './build-in/cli/rederers/versionCliRenderer';
 import { ActionsCliRenderer } from './build-in/cli/rederers/actionsCliRenderer';
+import { BuildInCommandExecutionService } from './build-in/services/buildInCommandExecutionService';
 
 
 export class BuildInDependenciesRegistrar {
-  public registerBuilInReferencesIntoActivator(activator: Activator) {    
+  public registerBuilInReferencesIntoActivator(activator: Activator) {
     activator.registerReference({
-      alias: 'activator',       
-      target:  activator,
+      alias: 'activator',
+      target: activator,
       type: ActionActivationReferenceType.constant,
     });
 
     this.registerServicesIntoActivator(activator);
     this.registerProvidersIntoActivator(activator);
     this.registerCliDependenciesIntoActivator(activator);
-  }  
+  }
 
   private registerServicesIntoActivator(activator: Activator) {
     activator.registerReference({
       alias: 'executionConfigurationMergingService',
       target: BuildInExecutionConfigurationMergingService,
     }).registerReference({
-      alias: 'loggingService', 
-      target:  BuildInLoggingService,
+      alias: 'loggingService',
+      target: BuildInLoggingService,
     }).registerReference({
       alias: 'textSecureService',
-      target:  BuildInTextSecureService,
+      target: BuildInTextSecureService,
       mode: ActionActivationReferenceMode.singelton,
     }).registerReference({
       alias: 'textTemplateContextProvider',
@@ -55,7 +56,10 @@ export class BuildInDependenciesRegistrar {
       mode: ActionActivationReferenceMode.singelton,
     }).registerReference({
       alias: 'textTemplateService',
-      target:  BuildInTextTemplateService,
+      target: BuildInTextTemplateService,
+    }).registerReference({
+      alias: 'commandExecutionService',
+      target: BuildInCommandExecutionService,
     });
   }
 
