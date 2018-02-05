@@ -1,12 +1,6 @@
-import { Activator } from './domain/activator';
 import { BuildInLoggingService } from './build-in/services/buildInLoggingService';
 import { BuildInTextTemplateService } from './build-in/services/buildInTextTemplateService';
 import { BuildInTextSecureService } from './build-in/services/buildInTextSecureService';
-import {
-  ActionActivationReference,
-  ActionActivationReferenceType,
-  ActionActivationReferenceMode,
-} from 'continui-action';
 import {
   BuildInTextTemplateContextProvider,
 } from './build-in/services/buildInTextTemplateContextProvider';
@@ -24,69 +18,65 @@ import { HelpCliRenderer } from './build-in/cli/rederers/helpCliRenderer';
 import { VersionCliRenderer } from './build-in/cli/rederers/versionCliRenderer';
 import { ActionsCliRenderer } from './build-in/cli/rederers/actionsCliRenderer';
 import { BuildInCommandExecutionService } from './build-in/services/buildInCommandExecutionService';
+import { Kernel } from '@jems/di';
+import { BuildInContinuiApplicationFactory } from './build-in/buildInContinuiApplicationFactory';
 
 
 export class BuildInDependenciesRegistrar {
-  public registerBuilInReferencesIntoActivator(activator: Activator) {
-    activator.registerReference({
-      alias: 'activator',
-      target: activator,
-      type: ActionActivationReferenceType.constant,
-    });
+  public registerBuilInReferencesIntoActivator(kernel: Kernel) {
 
-    this.registerServicesIntoActivator(activator);
-    this.registerProvidersIntoActivator(activator);
-    this.registerCliDependenciesIntoActivator(activator);
+    kernel.bind('kernel')
+          .to(kernel)
+          .whenInjectedExactlyIntoType(BuildInActionsProvider)
+          .whenInjectedExactlyIntoType(BuildInContinuiApplicationFactory);
+
+    this.registerServicesIntoActivator(kernel);
+    this.registerProvidersIntoActivator(kernel);
+    this.registerCliDependenciesIntoActivator(kernel);
   }
 
-  private registerServicesIntoActivator(activator: Activator) {
-    activator.registerReference({
-      alias: 'executionConfigurationMergingService',
-      target: BuildInExecutionConfigurationMergingService,
-    }).registerReference({
-      alias: 'loggingService',
-      target: BuildInLoggingService,
-    }).registerReference({
-      alias: 'textSecureService',
-      target: BuildInTextSecureService,
-      mode: ActionActivationReferenceMode.singelton,
-    }).registerReference({
-      alias: 'textTemplateContextProvider',
-      target: BuildInTextTemplateContextProvider,
-      mode: ActionActivationReferenceMode.singelton,
-    }).registerReference({
-      alias: 'textTemplateService',
-      target: BuildInTextTemplateService,
-    }).registerReference({
-      alias: 'commandExecutionService',
-      target: BuildInCommandExecutionService,
-    });
+  private registerServicesIntoActivator(kernel: Kernel) {
+    kernel.bind('executionConfigurationMergingService')
+          .to(BuildInExecutionConfigurationMergingService);
+
+    kernel.bind('loggingService')
+          .to(BuildInLoggingService);
+
+    kernel.bind('textSecureService')
+          .to(BuildInTextSecureService)
+          .inSingletonMode();
+          
+    kernel.bind('textTemplateContextProvider')
+          .to(BuildInTextTemplateContextProvider)
+          .inSingletonMode();
+          
+    kernel.bind('textTemplateService')
+          .to(BuildInTextTemplateService);
+
+    kernel.bind('commandExecutionService')
+          .to(BuildInCommandExecutionService);
   }
 
-  private registerProvidersIntoActivator(activator: Activator) {
-    activator.registerReference({
-      alias: 'fromFileExecutionConfigurationProvider',
-      target: BuildInFromFileExecutionConfigurationProvider,
-    }).registerReference({
-      alias: 'actionsProvider',
-      target: BuildInActionsProvider,
-      mode: ActionActivationReferenceMode.singelton,
-    });
+  private registerProvidersIntoActivator(kernel: Kernel) {
+    kernel.bind('fromFileExecutionConfigurationProvider')
+          .to(BuildInFromFileExecutionConfigurationProvider);
+
+    kernel.bind('actionsProvider')
+          .to(BuildInActionsProvider)
+          .inSingletonMode();
   }
 
-  private registerCliDependenciesIntoActivator(activator: Activator) {
-    activator.registerReference({
-      alias: 'cliExecutionConfigurationParsingService',
-      target: BuildInCliExecutionConfigurationParsingService,
-    }).registerReference({
-      alias: 'cliRenderer',
-      target: HelpCliRenderer,
-    }).registerReference({
-      alias: 'cliRenderer',
-      target: VersionCliRenderer,
-    }).registerReference({
-      alias: 'cliRenderer',
-      target: ActionsCliRenderer,
-    });
+  private registerCliDependenciesIntoActivator(kernel: Kernel) {
+    kernel.bind('cliExecutionConfigurationParsingService')
+          .to(BuildInCliExecutionConfigurationParsingService);
+
+    kernel.bind('cliRenderer')
+          .to(HelpCliRenderer);
+
+    kernel.bind('cliRenderer')
+          .to(VersionCliRenderer);
+
+    kernel.bind('cliRenderer')
+          .to(ActionsCliRenderer);
   }
 }

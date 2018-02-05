@@ -1,13 +1,14 @@
 import { Action, ActionActivationDefinition } from 'continui-action';
 import { ActionsProvider } from '../../domain/providers/actionsProvider';
-import { Activator } from '../../domain/activator';
+import { Kernel } from '@jems/di';
 
 import * as path from 'path';
+
 
 const privateScope: WeakMap<BuildInActionsProvider, {
   actionsModulesMap: { [actionIentifier: string]: string },
   loadedModules: string[],
-  activator: Activator,
+  kernel: Kernel,
 }> = new WeakMap();
 
 /**
@@ -15,9 +16,9 @@ const privateScope: WeakMap<BuildInActionsProvider, {
  */
 export class BuildInActionsProvider implements ActionsProvider {
 
-  constructor(activator: Activator) {
+  constructor(kernel: Kernel) {
     privateScope.set(this, {
-      activator,
+      kernel,
       actionsModulesMap: {},
       loadedModules: [],      
     });
@@ -48,7 +49,7 @@ export class BuildInActionsProvider implements ActionsProvider {
 
     return actionModules.map((actionModule) => {
       try {
-        return scope.activator.resolveWithContext('action', actionModule);
+        return scope.kernel.usingContainer(actionModule).resolve('action');
       } catch (error) {
         throw new Error(`Can not create action from module ${actionModule}\n ` + error);
       }
@@ -93,14 +94,14 @@ export class BuildInActionsProvider implements ActionsProvider {
 
     const scope = privateScope.get(this);
 
-    scope.activator.registerReferenceWithContext({
-      alias: 'action',
-      target: actionActivationDefinition.action,
-    },                                           actionModule);
+    scope.kernel.createContainer(actionModule);
     
-    actionActivationDefinition.activationReferences.forEach(activationReference =>
-      scope.activator.registerReferenceWithContext(activationReference,
-                                                   actionModule),
-    );
+    scope.kernel.usingContainer(actionModule)
+                .bind('action')
+                .to(actionActivationDefinition.action);
+                
+    actionActivationDefinition.registerDependencies({
+      containerizedKernel: scope.kernel.usingContainer(actionModule),
+    });
   }
 }

@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
-import { continuiApplicationFactory, activator, ContinuiApplication } from './index';
+import {
+    continuiApplicationFactory,
+    continuiDependenciesService,
+    ContinuiApplication,
+} from './index';
 import { ExecutionConfiguration } from './domain/models/executionConfiguration';
 import { ExecutionProgressInformation } from './domain/models/executionProgressInformation';
 import { CliRenderers } from './domain/cli/cliRenderer';
@@ -81,4 +85,4 @@ function cliExecution(
 
 }
 
-activator.resolve(cliExecution);
+continuiDependenciesService.resolve(cliExecution);

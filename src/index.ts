@@ -1,19 +1,23 @@
-import { Activator } from './domain/activator';
-import { BuildInActivator } from './build-in/buildInActivator';
-
 import { ContinuiApplicationFactory } from './domain/continuiApplicationFactory';
 
 import { BuildInDependenciesRegistrar } from './dependenciesRegistrar';
 import { BuildInContinuiApplicationFactory } from './build-in/buildInContinuiApplicationFactory';
+import { Kernel, createKernel } from '@jems/di';
+import {
+    BuildInContinuiDependenciesSevice,
+} from './build-in/services/buildInContinuiDependenciesService';
+import { ContinuiDependenciesService } from './domain/services/continuiDependenciesService';
 
+const kernel: Kernel = createKernel();
+const continuiDependenciesService: ContinuiDependenciesService =
+    new BuildInContinuiDependenciesSevice(kernel);
 
-const activator: Activator = new BuildInActivator();
+const buildInActivationRegistrar: BuildInDependenciesRegistrar =
+    new BuildInDependenciesRegistrar();
+buildInActivationRegistrar.registerBuilInReferencesIntoActivator(kernel);
 
-const buildInActivationRegistrar: BuildInDependenciesRegistrar = new BuildInDependenciesRegistrar();
-buildInActivationRegistrar.registerBuilInReferencesIntoActivator(activator);
-
-const continuiApplicationFactory: ContinuiApplicationFactory = 
-    activator.resolve(BuildInContinuiApplicationFactory);
+const continuiApplicationFactory: ContinuiApplicationFactory =
+    continuiDependenciesService.resolve(BuildInContinuiApplicationFactory);
 
 /**
  * Represents an factory that allows the creation of continui applications.
@@ -21,10 +25,10 @@ const continuiApplicationFactory: ContinuiApplicationFactory =
 export { continuiApplicationFactory as continuiApplicationFactory };
 
 /**
- * Represents an activation center that allows the dependency managment.
+ * Represents a sevice that allow resolve continui default dependencies.
  */
-export { activator as activator };
+export { continuiDependenciesService as continuiDependenciesService };
 
-export * from './domain/activator';
 export * from './domain/continuiApplication';
 export * from './domain/continuiApplicationFactory';
+export * from './domain/services/continuiDependenciesService';

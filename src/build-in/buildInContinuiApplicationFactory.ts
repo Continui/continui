@@ -8,10 +8,10 @@ import {
 import {
   ExecutionConfigurationMergingService,
 } from '../domain/services/executionConfigurationMergingService';
-import { Activator } from '../domain/activator';
+import { Kernel } from '@jems/di';
 
 const privateScope: WeakMap<BuildInContinuiApplicationFactory, {
-  activator: Activator,
+  kernel: Kernel,
 }> = new WeakMap();
 
 /**
@@ -19,9 +19,9 @@ const privateScope: WeakMap<BuildInContinuiApplicationFactory, {
  */
 export class BuildInContinuiApplicationFactory implements ContinuiApplicationFactory {
 
-  constructor(activator: Activator) {
+  constructor(kernel: Kernel) {
     privateScope.set(this, {
-      activator,
+      kernel,
     });
   }
 
@@ -30,7 +30,7 @@ export class BuildInContinuiApplicationFactory implements ContinuiApplicationFac
      * @returns A new continui application.
      */
   public createsContinuiApplication(): ContinuiApplication {
-    return privateScope.get(this).activator
+    return privateScope.get(this).kernel
                                  .resolve(BuildInContinuiApplication);
   }
 }
