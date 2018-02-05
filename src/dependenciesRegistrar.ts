@@ -27,8 +27,11 @@ export class BuildInDependenciesRegistrar {
 
     kernel.bind('kernel')
           .to(kernel)
-          .whenInjectedExactlyIntoType(BuildInActionsProvider)
-          .whenInjectedExactlyIntoType(BuildInContinuiApplicationFactory);
+          .asConstant()
+          .whenInjectedIntoTypes(
+            BuildInActionsProvider,
+            BuildInContinuiApplicationFactory,
+          );
 
     this.registerServicesIntoActivator(kernel);
     this.registerProvidersIntoActivator(kernel);

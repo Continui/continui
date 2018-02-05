@@ -94,7 +94,7 @@ export class BuildInActionsProvider implements ActionsProvider {
 
     const scope = privateScope.get(this);
 
-    scope.kernel.createContainer(actionModule);
+    scope.kernel.createContainer(actionModule, ['default']);
     
     scope.kernel.usingContainer(actionModule)
                 .bind('action')
