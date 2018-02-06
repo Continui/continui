@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/franciscomerdot/continui#readme",
   "dependencies": {
-    "@jems/di": "^0.9.5",
+    "@jems/di": "^0.9.7",
     "chalk": "^2.3.0",
     "co": "^4.6.0",
     "continui-action": "file:../continui-action",
