@@ -197,7 +197,18 @@ export class BuildInContinuiApplication extends ContinuiApplication {
 
             actionExecutionSteps.forEach((executionStep) => {
               if (executionStep.actionOptionsValueMap[option.key] === undefined) {
-                executionStep.actionOptionsValueMap[option.key] = option.defaultValue;
+                const parsedKey: string = option.key.split('-').map((word, index) => {
+                    if (!word || !word.length) {
+                      return '';
+                    }
+
+                    if (!index) {
+                      return word;
+                    }
+
+                    return word[0].toUpperCase() + word.substr(1);
+                }).join('');
+                executionStep.actionOptionsValueMap[parsedKey] = option.defaultValue;
               }
             });
           });
