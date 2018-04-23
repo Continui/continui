@@ -1,0 +1,22 @@
+{
+  "name": "@continui/domain",
+  "version": "0.0.1",
+  "description": "An abstraction for the continui library that defines the steps behavior.",
+  "main": "continui-domain.js",
+  "types": "continui-domain.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "gulp test"
+  },
+  "keywords": [
+    "continuous",
+    "delivery",
+    "deploy",
+    "continui",
+    "step"
+  ],
+  "author": "Fracisco Mercedes <franciscomerdot@gmail.com>",
+  "license": "MIT"
+}

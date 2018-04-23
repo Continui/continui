@@ -1,9 +1,9 @@
 {
-  "name": "@continui/continui",
+  "name": "@continui/core",
   "version": "0.0.1",
   "description": "An library to easily implement the continuous integration and delivery/deploy.",
-  "main": "continui.js",
-  "types": "continui.d.ts",
+  "main": "continui-core.js",
+  "types": "continui-core.d.ts",
   "publishConfig": {
     "access": "public"
   },
@@ -25,8 +25,6 @@
     "@jems/di": "^0.9.7",
     "chalk": "^2.3.0",
     "co": "^4.6.0",
-    "continui-action": "file:../continui-action",
-    "continui-services": "file:../continui-services",
     "deepmerge": "^2.0.1",
     "ejs": "^2.5.7",
     "minimist": "^1.2.0"
