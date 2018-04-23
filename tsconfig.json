@@ -6,8 +6,8 @@
         "moduleResolution": "node"
     },
     "exclude": [
-        "bin/**/*",
-        "dist/**/*",
-        "node_modules/**/*"
+        "**/bin",
+        "**/dist",
+        "**/node_modules"
     ]
 }
