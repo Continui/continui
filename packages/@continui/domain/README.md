@@ -2,16 +2,16 @@
 
 # Continui Domain
 
-A package that contains the domain abstractions for the `continui`'s actions, question and services.
+A package that contains the domain abstractions for the `continui`'s actions, checkers and services.
 
 
 # Overview
 
-If you are here, you may are wanting to create a new `continui`'s action or question, if not, you're planning to override it services with your own logic.
+If you are here, you may are wanting to create a new `continui`'s action or checker, if not, you're planning to override it services with your own logic.
 
 If the answer is none of those, then, what are you doing here?
 
-Anyways basically `continui` without it's actions, questions and services, is just nothing, so let's see what those concepts are and what they mean in the `continui`'s world.
+Anyways basically `continui` without it's actions, checkers and services, is just nothing, so let's see what those concepts are and what they mean in the `continui`'s world.
 
 # Concepts
 
@@ -31,13 +31,13 @@ Are specific actions you want to make against or with the source code and/or gen
 
 ### Checkers
 
-Are validations that must be made before an action to be executed, unlike the actions, checkers doesn't exist to make any changes in the contexts in which they are running instead they exist to answer a yes-no question.
+Are validations that must be made before an action to be executed, unlike the actions, checkers doesn't exist to make any changes in the contexts in which they are running instead they exist to answer a yes-no checker.
 
 > Eg. A checker could be one that tells you if there are changes in the repository or if the current version is already deployed somewhere, then depending on the answer you decide to proceed or not with the action execution.
 
 ### Services
 
-Are common services userd by `continui` and we think they can be util for your actions and question to be exected, basically are services for logging, execute shell commands, etc..., because `continui` has been built with the SOLID principles in mind, the application is `open-close` allowing you to extend the application by implementing your own version of the services if they don't fully satisfy your needs, this could be done without modifying the `continui`s code, also you can `inverse the dependencies` by injecting those services into your own implementations.
+Are common services userd by `continui` and we think they can be util for your actions and checker to be exected, basically are services for logging, execute shell commands, etc..., because `continui` has been built with the SOLID principles in mind, the application is `open-close` allowing you to extend the application by implementing your own version of the services if they don't fully satisfy your needs, this could be done without modifying the `continui`s code, also you can `inverse the dependencies` by injecting those services into your own implementations.
 
 #### Available Services
 
