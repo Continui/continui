@@ -15,16 +15,16 @@ Anyways basically `continui` without it's actions, checkers and services, is jus
 
 # Concepts
 
-## Actions
+### Actions
 
 Are specific actions you want to make against or with the source code and/or generated artifacts these actions can be as simple as a git operation just like commit, push and tag or take your generated artifacts and upload them to the clouds providers or a packages registries.
 
-### Action characteristics
+#### Action characteristics
 
-  1. #### Automaticaly reversible
+  1. ##### Automaticaly reversible
       Actions rollback itself if it or any action in the CI/CD pipeline fails, allowing the automatic rollback and restore of the distributions in case of any failure.
 
-  2. #### Has a single responsability
+  2. ##### Has a single responsability
       Actions are meant to do just one thing, it means you should let the consumer decide how things should occur in their pipelines. 
         
       > Eg. You should not create an action that commits something in git and at the same time push it to a remote git repository. consumers must decide when to commit and when to push.
