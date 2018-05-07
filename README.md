@@ -15,7 +15,7 @@ With `continui` you got the total control of the steps `(actions)` to be made in
 
 Also because `continui` has been built with the SOLID principles in mind, the application is `open-close` allowing you to extend the application by implementing your own version of the services if they don't fully satisfy your needs, this could be done without modifying the `continui`s code, also you can `inverse the dependencies` by injecting those services into your own implementations.
 
-> To learn more about how `continui` is built, how is composed and how to extend it visit **[Continui Domain](packages/@continui/domain/README.md)**
+> To learn more about how `continui` is built, how is composed and how to extend it visit **[Continui Domain](packages/@continui/domain)**
 
 # Usage
 

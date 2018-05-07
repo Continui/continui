@@ -31,13 +31,13 @@ Are specific actions you want to make against or with the source code and/or gen
 
 ### Checkers
 
-Are validations that must be made before an action to be executed, unlike the actions, checkers doesn't exist to make any changes in the contexts in which they are running instead they exist to answer a yes-no checker.
+Are validations that must be made before an action to be executed, unlike the actions, checkers doesn't exist to make any changes in the contexts in which they are running instead they exist to answer a yes-no question.
 
 > Eg. A checker could be one that tells you if there are changes in the repository or if the current version is already deployed somewhere, then depending on the answer you decide to proceed or not with the action execution.
 
 ### Services
 
-Are common services userd by `continui` and we think they can be util for your actions and checker to be exected, basically are services for logging, execute shell commands, etc..., because `continui` has been built with the SOLID principles in mind, the application is `open-close` allowing you to extend the application by implementing your own version of the services if they don't fully satisfy your needs, this could be done without modifying the `continui`s code, also you can `inverse the dependencies` by injecting those services into your own implementations.
+Are common services userd by `continui` and also we think they can be util for your actions and checker to be executed, basically are services for logging, execute shell commands, etc..., because `continui` has been built with the SOLID principles in mind, the application is `open-close` allowing you to extend the application by implementing your own version of the services if they don't fully satisfy your needs, this could be done without modifying the `continui`s code, also you can `inverse the dependencies` by injecting those services into your own implementations.
 
 #### Available Services
 
